@@ -1,0 +1,2073 @@
+[
+  {
+    "id": "uberon",
+    "acronym": "UBERON",
+    "name": "Uber-anatomy Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "A cross-species anatomy ontology covering animals, with extensive coverage of nervous system structures. It is the common anatomy backbone for many cell, expression and phenotype resources.",
+    "formats": [
+      "OWL",
+      "OBO",
+      "JSON"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "Uberon community",
+    "license": "CC BY 3.0",
+    "homepage": "https://obophenotype.github.io/uberon/",
+    "repository": "https://github.com/obophenotype/uberon",
+    "download": "http://purl.obolibrary.org/obo/uberon.owl",
+    "ols": "uberon",
+    "obo": "uberon",
+    "publications": [
+      {
+        "title": "Uberon, an integrative multi-species anatomy ontology",
+        "doi": "10.1186/gb-2012-13-1-r5",
+        "year": 2012
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "CELLxGENE",
+        "url": "https://cellxgene.cziscience.com/",
+        "note": "Tissue annotation of single-cell datasets"
+      },
+      {
+        "name": "HuBMAP",
+        "url": "https://hubmapconsortium.org/",
+        "note": "Anatomical structures in the Human Reference Atlas"
+      },
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Brain region annotation"
+      }
+    ],
+    "tags": [
+      "anatomy",
+      "cross-species",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "fma",
+    "acronym": "FMA",
+    "name": "Foundational Model of Anatomy",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "A detailed reference ontology of human anatomy, including fine-grained neuroanatomy. Marked inactive in the OBO Foundry; much of its neuro content is cross-referenced from Uberon.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "University of Washington Structural Informatics Group",
+    "homepage": "http://si.washington.edu/projects/fma",
+    "download": "http://purl.obolibrary.org/obo/fma.owl",
+    "ols": "fma",
+    "obo": "fma",
+    "publications": [
+      {
+        "title": "A reference ontology for biomedical informatics: the Foundational Model of Anatomy",
+        "doi": "10.1016/j.jbi.2003.11.007",
+        "year": 2003
+      }
+    ],
+    "usedBy": [],
+    "tags": [
+      "anatomy",
+      "human"
+    ]
+  },
+  {
+    "id": "mba",
+    "acronym": "MBA",
+    "name": "Allen Mouse Brain Atlas Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "The hierarchy of adult mouse brain regions used by the Allen Mouse Brain Atlas and Common Coordinate Framework, packaged as an OWL ontology by the BICAN community.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Mouse"
+    ],
+    "maintainer": "Allen Institute / BICAN",
+    "homepage": "https://atlas.brain-map.org/",
+    "repository": "https://github.com/brain-bican/mouse_brain_atlas_ontology",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "Allen Brain Atlas",
+        "url": "https://atlas.brain-map.org/",
+        "note": "Source region hierarchy"
+      },
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Mouse brain region annotation"
+      }
+    ],
+    "tags": [
+      "Allen",
+      "BICAN",
+      "brain regions",
+      "mouse"
+    ],
+    "download": "https://purl.brain-bican.org/ontology/mbao/mbao.owl"
+  },
+  {
+    "id": "dmba",
+    "acronym": "DMBA",
+    "name": "Developing Mouse Brain Atlas Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "Brain region hierarchy of the Allen Developing Mouse Brain Atlas, covering embryonic and postnatal stages.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Mouse"
+    ],
+    "maintainer": "Allen Institute / BICAN",
+    "homepage": "https://developingmouse.brain-map.org/",
+    "repository": "https://github.com/brain-bican/developing_mouse_brain_atlas_ontology",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "Allen Developing Mouse Brain Atlas",
+        "url": "https://developingmouse.brain-map.org/",
+        "note": "Source region hierarchy"
+      }
+    ],
+    "tags": [
+      "Allen",
+      "BICAN",
+      "brain regions",
+      "development",
+      "mouse"
+    ],
+    "download": "https://purl.brain-bican.org/ontology/dmbao/dmbao.owl"
+  },
+  {
+    "id": "hba",
+    "acronym": "HBA",
+    "name": "Human Brain Atlas Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "Adult human brain region hierarchy from the Allen Human Brain Atlas, packaged as an OWL ontology.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Allen Institute / BICAN",
+    "homepage": "https://human.brain-map.org/",
+    "repository": "https://github.com/brain-bican/human_brain_atlas_ontology",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "Allen Human Brain Atlas",
+        "url": "https://human.brain-map.org/",
+        "note": "Source region hierarchy"
+      }
+    ],
+    "tags": [
+      "Allen",
+      "BICAN",
+      "brain regions",
+      "human"
+    ],
+    "download": "https://purl.brain-bican.org/ontology/hbao/hbao.owl"
+  },
+  {
+    "id": "dhba",
+    "acronym": "DHBA",
+    "name": "Developing Human Brain Atlas Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "Brain region hierarchy of the developing human brain, as used by BrainSpan and the Allen developing human atlases.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Allen Institute / BICAN",
+    "homepage": "https://www.brainspan.org/",
+    "repository": "https://github.com/brain-bican/developing_human_brain_atlas_ontology",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BrainSpan",
+        "url": "https://www.brainspan.org/",
+        "note": "Region annotation of developmental transcriptome data"
+      }
+    ],
+    "tags": [
+      "Allen",
+      "BICAN",
+      "brain regions",
+      "development",
+      "human"
+    ],
+    "download": "https://purl.brain-bican.org/ontology/dhbao/dhbao.owl"
+  },
+  {
+    "id": "neuronames",
+    "acronym": "NeuroNames",
+    "name": "NeuroNames",
+    "category": "anatomy",
+    "kind": "vocabulary",
+    "description": "A long-standing nomenclature of primate brain structures with synonyms across languages and atlases, served through BrainInfo.",
+    "formats": [
+      "Web",
+      "Spreadsheet"
+    ],
+    "species": [
+      "Human",
+      "Macaque",
+      "Rat",
+      "Mouse"
+    ],
+    "maintainer": "BrainInfo, University of Washington",
+    "homepage": "http://braininfo.rprc.washington.edu/",
+    "publications": [
+      {
+        "title": "NeuroNames: an ontology for the BrainInfo portal to neuroscience on the web",
+        "doi": "10.1007/s12021-011-9128-8",
+        "year": 2012
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "BrainInfo",
+        "url": "http://braininfo.rprc.washington.edu/",
+        "note": "Primary nomenclature"
+      }
+    ],
+    "tags": [
+      "brain regions",
+      "nomenclature",
+      "primate"
+    ]
+  },
+  {
+    "id": "zfa",
+    "acronym": "ZFA",
+    "name": "Zebrafish Anatomy Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "Anatomy and development of the zebrafish, including the larval and adult nervous system.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Zebrafish"
+    ],
+    "maintainer": "ZFIN",
+    "license": "CC BY 3.0",
+    "homepage": "https://zfin.org/",
+    "repository": "https://github.com/ZFIN/zebrafish-anatomical-ontology",
+    "download": "http://purl.obolibrary.org/obo/zfa.owl",
+    "ols": "zfa",
+    "obo": "zfa",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "ZFIN",
+        "url": "https://zfin.org/",
+        "note": "Expression and phenotype annotation"
+      }
+    ],
+    "tags": [
+      "anatomy",
+      "zebrafish",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "fbbt",
+    "acronym": "FBbt",
+    "name": "Drosophila Anatomy Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "Anatomy of Drosophila melanogaster, including thousands of named neuron types linked to connectome datasets.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Fruit fly"
+    ],
+    "maintainer": "FlyBase / Virtual Fly Brain",
+    "license": "CC BY 4.0",
+    "homepage": "https://www.virtualflybrain.org/",
+    "repository": "https://github.com/FlyBase/drosophila-anatomy-developmental-ontology",
+    "download": "http://purl.obolibrary.org/obo/fbbt.owl",
+    "ols": "fbbt",
+    "obo": "fbbt",
+    "publications": [
+      {
+        "title": "The Drosophila anatomy ontology",
+        "doi": "10.1186/2041-1480-4-32",
+        "year": 2013
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "FlyBase",
+        "url": "https://flybase.org/",
+        "note": "Expression and phenotype annotation"
+      },
+      {
+        "name": "Virtual Fly Brain",
+        "url": "https://www.virtualflybrain.org/",
+        "note": "Neuron types and connectome integration"
+      }
+    ],
+    "tags": [
+      "anatomy",
+      "neuron types",
+      "drosophila",
+      "connectomics",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "wbbt",
+    "acronym": "WBbt",
+    "name": "C. elegans Gross Anatomy Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "Anatomy of Caenorhabditis elegans, including every identified neuron of its 302-neuron nervous system.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "C. elegans"
+    ],
+    "maintainer": "WormBase",
+    "license": "CC BY 4.0",
+    "homepage": "https://wormbase.org/",
+    "repository": "https://github.com/obophenotype/c-elegans-gross-anatomy-ontology",
+    "download": "http://purl.obolibrary.org/obo/wbbt.owl",
+    "ols": "wbbt",
+    "obo": "wbbt",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "WormBase",
+        "url": "https://wormbase.org/",
+        "note": "Expression and phenotype annotation"
+      }
+    ],
+    "tags": [
+      "anatomy",
+      "neurons",
+      "c. elegans",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "ccfv3",
+    "acronym": "CCFv3",
+    "name": "Allen Mouse Brain Common Coordinate Framework",
+    "category": "atlases",
+    "kind": "atlas",
+    "description": "A 3D reference space for the adult mouse brain with annotated regions at 10 µm resolution. The de facto standard for registering mouse brain data.",
+    "formats": [
+      "NRRD",
+      "JSON"
+    ],
+    "species": [
+      "Mouse"
+    ],
+    "maintainer": "Allen Institute",
+    "homepage": "https://atlas.brain-map.org/",
+    "publications": [
+      {
+        "title": "The Allen Mouse Brain Common Coordinate Framework: A 3D Reference Atlas",
+        "doi": "10.1016/j.cell.2020.04.007",
+        "year": 2020
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "BrainGlobe",
+        "url": "https://brainglobe.info/",
+        "note": "Atlas API and registration tools"
+      },
+      {
+        "name": "Allen Brain Cell Atlas",
+        "url": "https://portal.brain-map.org/atlases-and-data/bkp/abc-atlas",
+        "note": "Spatial mapping of cell types"
+      }
+    ],
+    "tags": [
+      "reference space",
+      "mouse",
+      "registration"
+    ]
+  },
+  {
+    "id": "whs-rat",
+    "acronym": "WHS",
+    "name": "Waxholm Space Atlas of the Sprague Dawley Rat Brain",
+    "category": "atlases",
+    "kind": "atlas",
+    "description": "An open, MRI/DTI-based volumetric atlas and reference space for the rat brain with delineated regions.",
+    "formats": [
+      "NIfTI",
+      "Label tables"
+    ],
+    "species": [
+      "Rat"
+    ],
+    "maintainer": "University of Oslo (NeSys)",
+    "homepage": "https://www.nitrc.org/projects/whs-sd-atlas",
+    "publications": [
+      {
+        "title": "Waxholm Space atlas of the Sprague Dawley rat brain",
+        "doi": "10.1016/j.neuroimage.2014.04.001",
+        "year": 2014
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "EBRAINS",
+        "url": "https://ebrains.eu/",
+        "note": "Rat reference atlas"
+      }
+    ],
+    "tags": [
+      "reference space",
+      "rat",
+      "MRI"
+    ]
+  },
+  {
+    "id": "julich-brain",
+    "acronym": "Julich-Brain",
+    "name": "Julich-Brain Cytoarchitectonic Atlas",
+    "category": "atlases",
+    "kind": "atlas",
+    "description": "Probabilistic cytoarchitectonic maps of the human brain, available through EBRAINS and the siibra toolsuite.",
+    "formats": [
+      "NIfTI",
+      "openMINDS JSON-LD"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Forschungszentrum Jülich / EBRAINS",
+    "homepage": "https://www.ebrains.eu/tools/human-brain-atlas",
+    "publications": [
+      {
+        "title": "Julich-Brain: A 3D probabilistic atlas of the human brain's cytoarchitecture",
+        "doi": "10.1126/science.abb4588",
+        "year": 2020
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "EBRAINS",
+        "url": "https://ebrains.eu/",
+        "note": "Human multilevel atlas"
+      }
+    ],
+    "tags": [
+      "parcellation",
+      "human",
+      "cytoarchitecture"
+    ]
+  },
+  {
+    "id": "cl",
+    "acronym": "CL",
+    "name": "Cell Ontology",
+    "category": "cells",
+    "kind": "ontology",
+    "description": "The reference ontology of cell types across organisms, with a large and growing branch of neuron and glial types.",
+    "formats": [
+      "OWL",
+      "OBO",
+      "JSON"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "Cell Ontology community",
+    "license": "CC BY 4.0",
+    "homepage": "https://obophenotype.github.io/cell-ontology/",
+    "repository": "https://github.com/obophenotype/cell-ontology",
+    "download": "http://purl.obolibrary.org/obo/cl.owl",
+    "ols": "cl",
+    "obo": "cl",
+    "publications": [
+      {
+        "title": "The Cell Ontology 2016: enhanced content, modularization, and ontology interoperability",
+        "doi": "10.1186/s13326-016-0088-7",
+        "year": 2016
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "CELLxGENE",
+        "url": "https://cellxgene.cziscience.com/",
+        "note": "Cell type annotation standard"
+      },
+      {
+        "name": "Human Cell Atlas",
+        "url": "https://www.humancellatlas.org/",
+        "note": "Cell type annotation"
+      },
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Brain cell types"
+      }
+    ],
+    "tags": [
+      "cell types",
+      "neurons",
+      "glia",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "pcl",
+    "acronym": "PCL",
+    "name": "Provisional Cell Ontology",
+    "category": "cells",
+    "kind": "ontology",
+    "description": "Holds data-driven cell types (e.g. from single-cell transcriptomics of the brain) before they are ready for the Cell Ontology, linked to their source taxonomies.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Human",
+      "Mouse",
+      "Marmoset"
+    ],
+    "maintainer": "Brain Data Standards / BICAN",
+    "license": "CC BY 4.0",
+    "repository": "https://github.com/obophenotype/provisional_cell_ontology",
+    "homepage": "https://github.com/obophenotype/provisional_cell_ontology",
+    "download": "http://purl.obolibrary.org/obo/pcl.owl",
+    "ols": "pcl",
+    "obo": "pcl",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Transcriptomic brain cell types"
+      }
+    ],
+    "tags": [
+      "cell types",
+      "transcriptomics",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "npo",
+    "acronym": "NPO",
+    "name": "Neuron Phenotype Ontology",
+    "category": "cells",
+    "kind": "ontology",
+    "description": "Defines neuron types by combinations of phenotypes (location, morphology, molecular markers, electrophysiology, projections). Part of the NIF Ontology.",
+    "formats": [
+      "OWL",
+      "Turtle"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "SciCrunch / FDI Lab",
+    "homepage": "https://github.com/SciCrunch/NIF-Ontology",
+    "repository": "https://github.com/SciCrunch/NIF-Ontology",
+    "publications": [
+      {
+        "title": "The Neuron Phenotype Ontology: A FAIR Approach to Proposing and Classifying Neuronal Types",
+        "doi": "10.1007/s12021-022-09566-7",
+        "year": 2022
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "SPARC",
+        "url": "https://sparc.science/",
+        "note": "Neuron populations in connectivity models"
+      }
+    ],
+    "tags": [
+      "neuron types",
+      "phenotypes"
+    ]
+  },
+  {
+    "id": "cas",
+    "acronym": "CAS",
+    "name": "Cell Annotation Schema",
+    "category": "cells",
+    "kind": "schema",
+    "description": "A JSON Schema for recording cell type annotations of single-cell datasets, including evidence, marker genes and links to ontology terms.",
+    "formats": [
+      "JSON Schema"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "Cell Annotation Schema community",
+    "homepage": "https://github.com/cellannotation/cell-annotation-schema",
+    "repository": "https://github.com/cellannotation/cell-annotation-schema",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Cell type taxonomy annotation"
+      }
+    ],
+    "tags": [
+      "cell types",
+      "annotation",
+      "single-cell"
+    ],
+    "tools": [
+      {
+        "name": "Taxonomy Development Tools",
+        "url": "https://github.com/brain-bican/taxonomy-development-tools",
+        "note": "Build and edit Cell Annotation Schema taxonomies"
+      }
+    ]
+  },
+  {
+    "id": "ccn",
+    "acronym": "CCN",
+    "name": "Common Cell Type Nomenclature",
+    "category": "cells",
+    "kind": "vocabulary",
+    "description": "A convention for naming and identifying data-driven cell types and taxonomies so that they can be compared and tracked across studies.",
+    "formats": [
+      "Convention"
+    ],
+    "species": [
+      "Mammals"
+    ],
+    "maintainer": "Allen Institute",
+    "homepage": "https://doi.org/10.7554/eLife.59928",
+    "publications": [
+      {
+        "title": "Common cell type nomenclature for the mammalian brain",
+        "doi": "10.7554/eLife.59928",
+        "year": 2020
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "Allen Brain Cell Atlas",
+        "url": "https://portal.brain-map.org/atlases-and-data/bkp/abc-atlas",
+        "note": "Taxonomy identifiers"
+      }
+    ],
+    "tags": [
+      "cell types",
+      "nomenclature",
+      "taxonomy"
+    ]
+  },
+  {
+    "id": "nbo",
+    "acronym": "NBO",
+    "name": "Neuro Behavior Ontology",
+    "category": "behavior",
+    "kind": "ontology",
+    "description": "Covers behavioral processes and phenotypes, such as learning, motor and social behavior, for annotating animal and human behavior.",
+    "formats": [
+      "OWL",
+      "OBO"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "OBO behavior community",
+    "license": "CC BY 3.0",
+    "homepage": "https://github.com/obo-behavior/behavior-ontology",
+    "repository": "https://github.com/obo-behavior/behavior-ontology",
+    "download": "http://purl.obolibrary.org/obo/nbo.owl",
+    "ols": "nbo",
+    "obo": "nbo",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "behavior",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "cogat",
+    "acronym": "CogAt",
+    "name": "Cognitive Atlas",
+    "category": "behavior",
+    "kind": "knowledge-base",
+    "description": "A collaborative knowledge base of cognitive concepts, tasks, and the relations between them, built for annotating cognitive neuroscience experiments.",
+    "formats": [
+      "Web",
+      "JSON API",
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Poldrack Lab, Stanford",
+    "homepage": "https://www.cognitiveatlas.org/",
+    "publications": [
+      {
+        "title": "The Cognitive Atlas: Toward a Knowledge Foundation for Cognitive Neuroscience",
+        "doi": "10.3389/fninf.2011.00017",
+        "year": 2011
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "NeuroVault",
+        "url": "https://neurovault.org/",
+        "note": "Tagging statistical maps with cognitive tasks"
+      }
+    ],
+    "tags": [
+      "cognition",
+      "tasks",
+      "fMRI"
+    ]
+  },
+  {
+    "id": "cogpo",
+    "acronym": "CogPO",
+    "name": "Cognitive Paradigm Ontology",
+    "category": "behavior",
+    "kind": "ontology",
+    "description": "Describes the stimuli, instructions and responses that make up cognitive experimental paradigms in neuroimaging studies.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "BrainMap / CogPO team",
+    "homepage": "http://www.cogpo.org/",
+    "bioportal": "COGPO",
+    "publications": [
+      {
+        "title": "The Cognitive Paradigm Ontology: Design and Application",
+        "doi": "10.1007/s12021-011-9126-x",
+        "year": 2011
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "BrainMap",
+        "url": "https://www.brainmap.org/",
+        "note": "Experiment coding scheme"
+      }
+    ],
+    "tags": [
+      "paradigms",
+      "tasks",
+      "neuroimaging"
+    ]
+  },
+  {
+    "id": "mf",
+    "acronym": "MF",
+    "name": "Mental Functioning Ontology",
+    "category": "behavior",
+    "kind": "ontology",
+    "description": "Represents mental functioning, including mental processes such as cognition and traits such as intelligence.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Janna Hastings et al.",
+    "license": "CC BY 3.0",
+    "homepage": "https://github.com/jannahastings/mental-functioning-ontology",
+    "repository": "https://github.com/jannahastings/mental-functioning-ontology",
+    "download": "http://purl.obolibrary.org/obo/mf.owl",
+    "ols": "mf",
+    "obo": "mf",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "cognition",
+      "mental processes",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "mfoem",
+    "acronym": "MFOEM",
+    "name": "Emotion Ontology",
+    "category": "behavior",
+    "kind": "ontology",
+    "description": "Represents affective phenomena such as emotions, moods and appraisals, as an extension of the Mental Functioning Ontology.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Janna Hastings et al.",
+    "license": "CC BY 3.0",
+    "homepage": "https://github.com/jannahastings/emotion-ontology",
+    "repository": "https://github.com/jannahastings/emotion-ontology",
+    "download": "http://purl.obolibrary.org/obo/mfoem.owl",
+    "ols": "mfoem",
+    "obo": "mfoem",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "emotion",
+      "affect",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "mfomd",
+    "acronym": "MFOMD",
+    "name": "Mental Disease Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "Describes and categorises mental disorders, built on the Mental Functioning Ontology.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Janna Hastings et al.",
+    "license": "CC BY 3.0",
+    "homepage": "https://github.com/jannahastings/mental-functioning-ontology",
+    "repository": "https://github.com/jannahastings/mental-functioning-ontology",
+    "download": "http://purl.obolibrary.org/obo/mfomd.owl",
+    "ols": "mfomd",
+    "obo": "mfomd",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "psychiatry",
+      "mental disorders",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "mondo",
+    "acronym": "MONDO",
+    "name": "Mondo Disease Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "A unified disease ontology that merges many disease resources, with comprehensive coverage of neurological and neurodevelopmental disorders.",
+    "formats": [
+      "OWL",
+      "OBO",
+      "JSON"
+    ],
+    "species": [
+      "Human",
+      "Multi-species"
+    ],
+    "maintainer": "Monarch Initiative",
+    "license": "CC BY 4.0",
+    "homepage": "https://mondo.monarchinitiative.org/",
+    "repository": "https://github.com/monarch-initiative/mondo",
+    "download": "http://purl.obolibrary.org/obo/mondo.owl",
+    "ols": "mondo",
+    "obo": "mondo",
+    "publications": [
+      {
+        "title": "Mondo: Unifying diseases for the world, by the world",
+        "doi": "10.1101/2022.04.13.22273750",
+        "year": 2022
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "CELLxGENE",
+        "url": "https://cellxgene.cziscience.com/",
+        "note": "Disease annotation of datasets"
+      }
+    ],
+    "tags": [
+      "disease",
+      "neurology",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "hp",
+    "acronym": "HPO",
+    "name": "Human Phenotype Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "Standard vocabulary of phenotypic abnormalities in human disease, with a large nervous system abnormality branch used in rare-disease diagnostics.",
+    "formats": [
+      "OWL",
+      "OBO",
+      "JSON"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "HPO consortium / Monarch Initiative",
+    "homepage": "https://hpo.jax.org/",
+    "repository": "https://github.com/obophenotype/human-phenotype-ontology",
+    "download": "http://purl.obolibrary.org/obo/hp.owl",
+    "ols": "hp",
+    "obo": "hp",
+    "publications": [
+      {
+        "title": "The Human Phenotype Ontology in 2021",
+        "doi": "10.1093/nar/gkaa1043",
+        "year": 2021
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "Genomics England",
+        "url": "https://www.genomicsengland.co.uk/",
+        "note": "Phenotyping in rare-disease programmes"
+      }
+    ],
+    "tags": [
+      "phenotype",
+      "clinical",
+      "rare disease",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "ado",
+    "acronym": "ADO",
+    "name": "Alzheimer's Disease Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "Covers the clinical, preclinical and molecular knowledge domains of Alzheimer's disease.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Fraunhofer SCAI",
+    "license": "CC BY 4.0",
+    "homepage": "https://github.com/Fraunhofer-SCAI-Applied-Semantics/ADO",
+    "repository": "https://github.com/Fraunhofer-SCAI-Applied-Semantics/ADO",
+    "ols": "ado",
+    "obo": "ado",
+    "publications": [
+      {
+        "title": "ADO: a disease ontology representing the domain knowledge specific to Alzheimer's disease",
+        "doi": "10.1016/j.jalz.2013.02.009",
+        "year": 2014
+      }
+    ],
+    "usedBy": [],
+    "tags": [
+      "alzheimer's",
+      "neurodegeneration",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "nd",
+    "acronym": "ND",
+    "name": "Neurological Disease Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "A framework for representing neurological diseases together with their diagnosis, treatment and associated clinical findings.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Alexander Diehl et al.",
+    "homepage": "https://github.com/addiehl/neurological-disease-ontology",
+    "repository": "https://github.com/addiehl/neurological-disease-ontology",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "neurology",
+      "disease"
+    ]
+  },
+  {
+    "id": "epso",
+    "acronym": "EPSO",
+    "name": "Epilepsy and Seizure Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "Represents epilepsy syndromes, seizure types, EEG findings and treatments, aligned with ILAE classifications.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Case Western Reserve University",
+    "homepage": "https://bioportal.bioontology.org/ontologies/EPSO",
+    "bioportal": "EPSO",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "epilepsy",
+      "seizure",
+      "EEG"
+    ]
+  },
+  {
+    "id": "pdon",
+    "acronym": "PDON",
+    "name": "Parkinson's Disease Ontology",
+    "category": "disease",
+    "kind": "ontology",
+    "description": "Models knowledge about Parkinson's disease, including etiology, symptoms, diagnosis and treatment, for literature mining and data integration.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Fraunhofer SCAI",
+    "homepage": "https://bioportal.bioontology.org/ontologies/PDON",
+    "bioportal": "PDON",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "parkinson's",
+      "neurodegeneration"
+    ]
+  },
+  {
+    "id": "go",
+    "acronym": "GO",
+    "name": "Gene Ontology",
+    "category": "molecular",
+    "kind": "ontology",
+    "description": "Describes gene product functions, processes and locations, including synaptic transmission, neurotransmitter release and neuron development.",
+    "formats": [
+      "OWL",
+      "OBO",
+      "JSON"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "Gene Ontology Consortium",
+    "license": "CC BY 4.0",
+    "homepage": "https://geneontology.org/",
+    "repository": "https://github.com/geneontology/go-ontology",
+    "download": "http://purl.obolibrary.org/obo/go.owl",
+    "ols": "go",
+    "obo": "go",
+    "publications": [
+      {
+        "title": "The Gene Ontology knowledgebase in 2023",
+        "doi": "10.1093/genetics/iyad031",
+        "year": 2023
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "SynGO",
+        "url": "https://syngoportal.org/",
+        "note": "Synaptic annotations built on GO terms"
+      }
+    ],
+    "tags": [
+      "genes",
+      "synapse",
+      "function",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "syngo",
+    "acronym": "SynGO",
+    "name": "SynGO – Synaptic Gene Ontologies and Annotations",
+    "category": "molecular",
+    "kind": "knowledge-base",
+    "description": "Expert-curated, evidence-based annotations of synaptic gene functions and locations, organised with Gene Ontology terms.",
+    "formats": [
+      "Web",
+      "Spreadsheet",
+      "GO annotation"
+    ],
+    "species": [
+      "Human",
+      "Mouse",
+      "Rat"
+    ],
+    "maintainer": "SynGO consortium",
+    "homepage": "https://syngoportal.org/",
+    "publications": [
+      {
+        "title": "SynGO: An Evidence-Based, Expert-Curated Knowledge Base for the Synapse",
+        "doi": "10.1016/j.neuron.2019.05.002",
+        "year": 2019
+      }
+    ],
+    "usedBy": [],
+    "tags": [
+      "synapse",
+      "genes",
+      "annotation"
+    ]
+  },
+  {
+    "id": "chebi",
+    "acronym": "ChEBI",
+    "name": "Chemical Entities of Biological Interest",
+    "category": "molecular",
+    "kind": "ontology",
+    "description": "An ontology of small molecules, including neurotransmitters, neuromodulators and neuroactive drugs, with their chemical roles.",
+    "formats": [
+      "OWL",
+      "OBO",
+      "SDF"
+    ],
+    "species": [
+      "N/A"
+    ],
+    "maintainer": "EMBL-EBI",
+    "license": "CC BY 4.0",
+    "homepage": "https://www.ebi.ac.uk/chebi/",
+    "repository": "https://github.com/ebi-chebi/ChEBI",
+    "download": "http://purl.obolibrary.org/obo/chebi.owl",
+    "ols": "chebi",
+    "obo": "chebi",
+    "publications": [
+      {
+        "title": "ChEBI in 2016: Improved services and an expanding collection of metabolites",
+        "doi": "10.1093/nar/gkv1031",
+        "year": 2016
+      }
+    ],
+    "usedBy": [],
+    "tags": [
+      "chemistry",
+      "neurotransmitters",
+      "drugs",
+      "OBO Foundry"
+    ]
+  },
+  {
+    "id": "bids",
+    "acronym": "BIDS",
+    "name": "Brain Imaging Data Structure",
+    "category": "imaging",
+    "kind": "data-standard",
+    "description": "A community standard for organising and describing neuroimaging and related data (MRI, EEG, MEG, iEEG, PET, microscopy, and more). Its rules are published as a machine-readable YAML schema.",
+    "formats": [
+      "YAML schema",
+      "JSON"
+    ],
+    "species": [
+      "Human",
+      "Multi-species"
+    ],
+    "maintainer": "BIDS community",
+    "license": "CC BY 4.0",
+    "homepage": "https://bids.neuroimaging.io/",
+    "repository": "https://github.com/bids-standard/bids-specification",
+    "publications": [
+      {
+        "title": "The brain imaging data structure, a format for organizing and describing outputs of neuroimaging experiments",
+        "doi": "10.1038/sdata.2016.44",
+        "year": 2016
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "OpenNeuro",
+        "url": "https://openneuro.org/",
+        "note": "Required dataset format"
+      },
+      {
+        "name": "fMRIPrep",
+        "url": "https://fmriprep.org/",
+        "note": "BIDS App input"
+      },
+      {
+        "name": "MNE-BIDS",
+        "url": "https://mne.tools/mne-bids/",
+        "note": "EEG/MEG BIDS conversion"
+      }
+    ],
+    "tags": [
+      "MRI",
+      "EEG",
+      "MEG",
+      "data organisation"
+    ]
+  },
+  {
+    "id": "nidm",
+    "acronym": "NIDM",
+    "name": "Neuroimaging Data Model",
+    "category": "imaging",
+    "kind": "schema",
+    "description": "A family of W3C PROV-based specifications for describing neuroimaging experiments, workflows and results (NIDM-Experiment, NIDM-Workflows, NIDM-Results).",
+    "formats": [
+      "RDF",
+      "Turtle",
+      "JSON-LD"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "INCF NIDASH task force",
+    "homepage": "http://nidm.nidash.org/",
+    "repository": "https://github.com/incf-nidash/nidm-specs",
+    "publications": [
+      {
+        "title": "Sharing brain mapping statistical results with the neuroimaging data model",
+        "doi": "10.1038/sdata.2016.102",
+        "year": 2016
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "NeuroVault",
+        "url": "https://neurovault.org/",
+        "note": "Accepts NIDM-Results uploads"
+      },
+      {
+        "name": "ReproNim",
+        "url": "https://www.repronim.org/",
+        "note": "Reproducible neuroimaging tools"
+      }
+    ],
+    "tags": [
+      "provenance",
+      "fMRI",
+      "results",
+      "RDF"
+    ]
+  },
+  {
+    "id": "hed",
+    "acronym": "HED",
+    "name": "Hierarchical Event Descriptors",
+    "category": "imaging",
+    "kind": "vocabulary",
+    "description": "A structured vocabulary and annotation system for describing experimental events in time-series data such as EEG, MEG, fMRI and behavior.",
+    "formats": [
+      "XML",
+      "MediaWiki",
+      "TSV",
+      "OWL"
+    ],
+    "species": [
+      "Human",
+      "Multi-species"
+    ],
+    "maintainer": "HED Working Group",
+    "homepage": "https://www.hedtags.org/",
+    "repository": "https://github.com/hed-standard/hed-schemas",
+    "publications": [
+      {
+        "title": "Building FAIR Functionality: Annotating Events in Time Series Data Using Hierarchical Event Descriptors (HED)",
+        "doi": "10.1007/s12021-021-09537-4",
+        "year": 2022
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "BIDS",
+        "url": "https://bids.neuroimaging.io/",
+        "note": "Event annotation in events.tsv sidecars"
+      },
+      {
+        "name": "EEGLAB",
+        "url": "https://sccn.ucsd.edu/eeglab/",
+        "note": "HED tools plugin"
+      }
+    ],
+    "tags": [
+      "events",
+      "EEG",
+      "annotation"
+    ]
+  },
+  {
+    "id": "nemo",
+    "acronym": "NEMO",
+    "name": "Neural ElectroMagnetic Ontologies",
+    "category": "imaging",
+    "kind": "ontology",
+    "description": "Ontologies for event-related potential (ERP) data and analysis in EEG and MEG studies. A legacy resource.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "University of Oregon",
+    "homepage": "https://bioportal.bioontology.org/ontologies/NEMO",
+    "bioportal": "NEMO",
+    "status": "legacy",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "ERP",
+      "EEG",
+      "MEG"
+    ]
+  },
+  {
+    "id": "nwb",
+    "acronym": "NWB",
+    "name": "Neurodata Without Borders Schema",
+    "category": "physiology",
+    "kind": "data-standard",
+    "description": "A data standard and schema for neurophysiology: extracellular and intracellular electrophysiology, optical physiology, behavior and stimuli, extensible via neurodata extensions (NDX).",
+    "formats": [
+      "YAML schema",
+      "HDF5",
+      "Zarr"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "NWB team",
+    "license": "BSD-3-Clause",
+    "homepage": "https://www.nwb.org/",
+    "repository": "https://github.com/NeurodataWithoutBorders/nwb-schema",
+    "publications": [
+      {
+        "title": "The Neurodata Without Borders ecosystem for neurophysiological data science",
+        "doi": "10.7554/eLife.78362",
+        "year": 2022
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "DANDI Archive",
+        "url": "https://dandiarchive.org/",
+        "note": "Primary data format"
+      },
+      {
+        "name": "Allen Brain Observatory",
+        "url": "https://portal.brain-map.org/explore/circuits",
+        "note": "Data distribution"
+      },
+      {
+        "name": "SpikeInterface",
+        "url": "https://spikeinterface.readthedocs.io/",
+        "note": "Read/write support"
+      }
+    ],
+    "tags": [
+      "electrophysiology",
+      "ophys",
+      "behavior",
+      "HDF5"
+    ]
+  },
+  {
+    "id": "odml",
+    "acronym": "odML",
+    "name": "odML Terminologies",
+    "category": "physiology",
+    "kind": "vocabulary",
+    "description": "Terminologies for the odML metadata format, giving standard keys for describing electrophysiology experiments, subjects and hardware.",
+    "formats": [
+      "XML",
+      "JSON",
+      "YAML"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "G-Node",
+    "homepage": "https://g-node.github.io/python-odml/",
+    "repository": "https://github.com/G-Node/odml-terminologies",
+    "publications": [
+      {
+        "title": "A Bottom-up Approach to Data Annotation in Neurophysiology",
+        "doi": "10.3389/fninf.2011.00016",
+        "year": 2011
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "NIX",
+        "url": "https://github.com/G-Node/nix",
+        "note": "Embedded metadata model"
+      }
+    ],
+    "tags": [
+      "metadata",
+      "electrophysiology"
+    ]
+  },
+  {
+    "id": "neuroml",
+    "acronym": "NeuroML",
+    "name": "NeuroML",
+    "category": "modeling",
+    "kind": "schema",
+    "description": "An XML-based language (with XSD schema) for describing detailed neuron, synapse and network models in a simulator-independent way.",
+    "formats": [
+      "XSD",
+      "XML",
+      "LEMS"
+    ],
+    "species": [
+      "N/A"
+    ],
+    "maintainer": "NeuroML Editorial Board",
+    "homepage": "https://neuroml.org/",
+    "repository": "https://github.com/NeuroML/NeuroML2",
+    "publications": [
+      {
+        "title": "NeuroML: a language for describing data driven models of neurons and networks with a high degree of biological detail",
+        "doi": "10.1371/journal.pcbi.1000815",
+        "year": 2010
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "Open Source Brain",
+        "url": "https://www.opensourcebrain.org/",
+        "note": "Model sharing platform"
+      },
+      {
+        "name": "NetPyNE",
+        "url": "https://www.netpyne.org/",
+        "note": "Import/export"
+      }
+    ],
+    "tags": [
+      "models",
+      "simulation",
+      "networks"
+    ]
+  },
+  {
+    "id": "cno",
+    "acronym": "CNO",
+    "name": "Computational Neuroscience Ontology",
+    "category": "modeling",
+    "kind": "ontology",
+    "description": "A controlled vocabulary of terms used to describe and annotate computational neuroscience models. A legacy resource.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "N/A"
+    ],
+    "maintainer": "INCF",
+    "homepage": "https://bioportal.bioontology.org/ontologies/CNO",
+    "bioportal": "CNO",
+    "status": "legacy",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "models",
+      "annotation"
+    ]
+  },
+  {
+    "id": "openminds",
+    "acronym": "openMINDS",
+    "name": "openMINDS",
+    "category": "metadata",
+    "kind": "schema",
+    "description": "A set of metadata models and controlled terms for neuroscience graph databases, covering datasets, subjects, methods, software, models and brain atlases (SANDS).",
+    "formats": [
+      "JSON Schema",
+      "JSON-LD"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "Open Metadata Initiative / EBRAINS",
+    "license": "MIT",
+    "homepage": "https://openminds-documentation.readthedocs.io/",
+    "repository": "https://github.com/openMetadataInitiative/openMINDS",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "EBRAINS Knowledge Graph",
+        "url": "https://search.kg.ebrains.eu/",
+        "note": "Native metadata model"
+      }
+    ],
+    "tags": [
+      "metadata",
+      "knowledge graph",
+      "atlases",
+      "JSON-LD"
+    ]
+  },
+  {
+    "id": "bican-models",
+    "acronym": "BICAN models",
+    "name": "BICAN Knowledge Graph Models",
+    "category": "metadata",
+    "kind": "schema",
+    "description": "LinkML data models for the BRAIN Initiative Cell Atlas Network (BICAN) knowledgebase: taxonomies, assertions and evidence, library generation, anatomical structures, genome annotation, donors and a BICAN subset of Biolink. JSON Schema and Pydantic models are generated from the LinkML sources.",
+    "formats": [
+      "LinkML",
+      "JSON Schema",
+      "Pydantic"
+    ],
+    "species": [
+      "Human",
+      "Mouse",
+      "Primate"
+    ],
+    "maintainer": "BICAN",
+    "homepage": "https://brain-bican.github.io/models/",
+    "repository": "https://github.com/brain-bican/models",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BICAN Knowledgebase",
+        "url": "https://www.portal.brain-bican.org/teams/bican-knowledgebase",
+        "note": "Knowledge graph built on these models"
+      },
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Knowledge graph data models"
+      }
+    ],
+    "tags": [
+      "LinkML",
+      "knowledge graph",
+      "cell atlas",
+      "BICAN"
+    ],
+    "modules": [
+      {
+        "name": "BKE Taxonomy",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/bke_taxonomy.yaml",
+        "note": "Types and relationships of the BKE taxonomy"
+      },
+      {
+        "name": "Cell Taxonomy",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/cell_taxonomy.yaml",
+        "note": "Cell type taxonomy structure"
+      },
+      {
+        "name": "Assertion & Evidence",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/assertion_evidence.yaml",
+        "note": "Assertions and the evidence supporting them"
+      },
+      {
+        "name": "Library Generation",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/library_generation.yaml",
+        "note": "Samples and digital assets produced while generating sequencing libraries"
+      },
+      {
+        "name": "Anatomical Structure",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/anatomical_structure.yaml",
+        "note": "Anatomical brain structures, parcellations and coordinate spaces"
+      },
+      {
+        "name": "Genome Annotation",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/genome_annotation.yaml",
+        "note": "An organism's annotated genome"
+      },
+      {
+        "name": "Donor",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/donor.yaml",
+        "note": "Donor and subject information"
+      },
+      {
+        "name": "BICAN Core",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/bican_core.yaml",
+        "note": "Shared core classes and slots"
+      },
+      {
+        "name": "BICAN Biolink",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/bican_biolink.yaml",
+        "note": "BICAN subset of classes from the Biolink model"
+      },
+      {
+        "name": "BICAN PROV",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/bican_prov.yaml",
+        "note": "Provenance classes (W3C PROV)"
+      },
+      {
+        "name": "BICAN SKOS",
+        "url": "https://github.com/brain-bican/models/blob/main/linkml-schema/bican_skos.yaml",
+        "note": "SKOS concepts used by the models"
+      }
+    ],
+    "tools": [
+      {
+        "name": "bkbit",
+        "url": "https://github.com/brain-bican/bkbit",
+        "note": "Brain Knowledge Base Interaction Toolkit: Pydantic models, validation and JSON-LD conversion (pip install bkbit)"
+      }
+    ]
+  },
+  {
+    "id": "dandi-schema",
+    "acronym": "DANDI schema",
+    "name": "DANDI Archive Metadata Schema",
+    "category": "metadata",
+    "kind": "schema",
+    "description": "The metadata models of the DANDI neurophysiology archive. Pydantic models in the dandischema library define Dandiset and asset metadata; versioned JSON Schemas plus a JSON-LD context are generated from them and published in the dandi/schema repository. The library also converts Dandiset metadata to DataCite for DOIs.",
+    "formats": [
+      "JSON Schema",
+      "JSON-LD",
+      "Pydantic"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "DANDI team",
+    "homepage": "https://docs.dandiarchive.org/",
+    "repository": "https://github.com/dandi/dandi-schema",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "DANDI Archive",
+        "url": "https://dandiarchive.org/",
+        "note": "Dataset metadata"
+      }
+    ],
+    "tags": [
+      "metadata",
+      "archive",
+      "neurophysiology",
+      "NWB",
+      "DataCite"
+    ],
+    "download": "https://github.com/dandi/schema/tree/master/releases",
+    "modules": [
+      {
+        "name": "Dandiset",
+        "url": "https://github.com/dandi/schema/blob/master/releases/0.8.0/dandiset.json",
+        "note": "Draft Dandiset metadata (JSON Schema, release 0.8.0)"
+      },
+      {
+        "name": "Published Dandiset",
+        "url": "https://github.com/dandi/schema/blob/master/releases/0.8.0/published-dandiset.json",
+        "note": "Metadata of a published, versioned Dandiset"
+      },
+      {
+        "name": "Asset",
+        "url": "https://github.com/dandi/schema/blob/master/releases/0.8.0/asset.json",
+        "note": "Per-file asset metadata"
+      },
+      {
+        "name": "Published Asset",
+        "url": "https://github.com/dandi/schema/blob/master/releases/0.8.0/published-asset.json",
+        "note": "Asset metadata within a published Dandiset"
+      },
+      {
+        "name": "JSON-LD context",
+        "url": "https://github.com/dandi/schema/blob/master/releases/0.8.0/context.json",
+        "note": "Maps fields to schema.org and other vocabularies"
+      },
+      {
+        "name": "Pydantic models",
+        "url": "https://github.com/dandi/dandi-schema/blob/master/dandischema/models.py",
+        "note": "Source of truth for all generated schemas"
+      }
+    ],
+    "tools": [
+      {
+        "name": "dandischema",
+        "url": "https://pypi.org/project/dandischema/",
+        "note": "Python library: validate, migrate and aggregate DANDI metadata"
+      },
+      {
+        "name": "dandi-cli",
+        "url": "https://github.com/dandi/dandi-cli",
+        "note": "Command-line client that validates uploads against the schema"
+      }
+    ]
+  },
+  {
+    "id": "reproschema",
+    "acronym": "ReproSchema",
+    "name": "ReproSchema",
+    "category": "metadata",
+    "kind": "schema",
+    "description": "A JSON-LD schema for standardising assessments and questionnaires, with versioned items, scoring and provenance, plus a shared library of instruments.",
+    "formats": [
+      "JSON-LD",
+      "LinkML"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "ReproNim",
+    "homepage": "https://www.repronim.org/reproschema/",
+    "repository": "https://github.com/ReproNim/reproschema",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "ReproNim",
+        "url": "https://www.repronim.org/",
+        "note": "Reproducible assessment collection"
+      }
+    ],
+    "tags": [
+      "questionnaires",
+      "assessments",
+      "JSON-LD"
+    ]
+  },
+  {
+    "id": "neuroshapes",
+    "acronym": "Neuroshapes",
+    "name": "Neuroshapes",
+    "category": "metadata",
+    "kind": "schema",
+    "description": "Open SHACL schemas for neuroscience data and provenance, originally developed within INCF and used by Blue Brain Nexus.",
+    "formats": [
+      "SHACL",
+      "JSON-LD"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "INCF / Blue Brain Project",
+    "homepage": "https://github.com/INCF/neuroshapes",
+    "repository": "https://github.com/INCF/neuroshapes",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "Blue Brain Nexus",
+        "url": "https://github.com/BlueBrain/nexus",
+        "note": "Knowledge graph validation"
+      }
+    ],
+    "tags": [
+      "SHACL",
+      "knowledge graph",
+      "provenance"
+    ]
+  },
+  {
+    "id": "sparc-sds",
+    "acronym": "SDS",
+    "name": "SPARC Dataset Structure",
+    "category": "metadata",
+    "kind": "data-standard",
+    "description": "File and metadata structure for datasets in the NIH SPARC programme on the peripheral nervous system, with curation tooling that maps to InterLex terms.",
+    "formats": [
+      "Spreadsheet",
+      "JSON"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "SPARC Data and Resource Center",
+    "homepage": "https://sparc.science/",
+    "repository": "https://github.com/SciCrunch/sparc-curation",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "SPARC Portal",
+        "url": "https://sparc.science/",
+        "note": "Required dataset structure"
+      }
+    ],
+    "tags": [
+      "peripheral nervous system",
+      "dataset structure"
+    ]
+  },
+  {
+    "id": "nifstd",
+    "acronym": "NIFSTD",
+    "name": "NIF Standard Ontology",
+    "category": "terminology",
+    "kind": "ontology",
+    "description": "The Neuroscience Information Framework ontology: a broad, modular set of neuroscience terms spanning anatomy, cells, molecules, techniques and resources.",
+    "formats": [
+      "OWL",
+      "Turtle"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "SciCrunch / FDI Lab",
+    "homepage": "https://github.com/SciCrunch/NIF-Ontology",
+    "repository": "https://github.com/SciCrunch/NIF-Ontology",
+    "bioportal": "NIFSTD",
+    "publications": [
+      {
+        "title": "The NIFSTD and BIRNLex Vocabularies: Building Comprehensive Ontologies for Neuroscience",
+        "doi": "10.1007/s12021-008-9032-z",
+        "year": 2008
+      }
+    ],
+    "usedBy": [
+      {
+        "name": "Neuroscience Information Framework",
+        "url": "https://neuinfo.org/",
+        "note": "Search and resource annotation"
+      },
+      {
+        "name": "SPARC",
+        "url": "https://sparc.science/",
+        "note": "Via InterLex"
+      }
+    ],
+    "tags": [
+      "neuroscience",
+      "umbrella"
+    ]
+  },
+  {
+    "id": "interlex",
+    "acronym": "InterLex",
+    "name": "InterLex",
+    "category": "terminology",
+    "kind": "vocabulary",
+    "description": "A dynamic term registry (successor to NeuroLex) where neuroscience terms are minted, linked to existing ontologies and given stable ILX identifiers.",
+    "formats": [
+      "Web",
+      "REST API",
+      "Turtle"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "SciCrunch / FDI Lab",
+    "homepage": "https://scicrunch.org/scicrunch/interlex/dashboard",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "SPARC",
+        "url": "https://sparc.science/",
+        "note": "Dataset and anatomy terms"
+      },
+      {
+        "name": "RRID",
+        "url": "https://www.rrids.org/",
+        "note": "Resource identifiers"
+      }
+    ],
+    "tags": [
+      "term registry",
+      "identifiers"
+    ]
+  },
+  {
+    "id": "bams",
+    "acronym": "BAMS",
+    "name": "Brain Architecture Management System",
+    "category": "terminology",
+    "kind": "knowledge-base",
+    "description": "A knowledge management system for nervous system structure and connectivity data, with its own brain region nomenclatures. A legacy resource.",
+    "formats": [
+      "Web",
+      "RDF"
+    ],
+    "species": [
+      "Rat",
+      "Mouse",
+      "Human",
+      "Macaque"
+    ],
+    "maintainer": "University of Southern California",
+    "homepage": "https://bams1.org/",
+    "status": "legacy",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "connectivity",
+      "brain regions"
+    ]
+  },
+  {
+    "id": "pbao",
+    "acronym": "PBAO",
+    "name": "Primate Brain Atlas Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "An application ontology of the Allen Institute Primate Brain Atlas structure graph, mapped to Uberon. Currently in draft status.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Macaque"
+    ],
+    "maintainer": "BICAN",
+    "homepage": "https://brain-bican.github.io/primate_brain_atlas_ontology/",
+    "repository": "https://github.com/brain-bican/primate_brain_atlas_ontology",
+    "download": "https://purl.brain-bican.org/ontology/pbao/pbao.owl",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "brain regions",
+      "primate",
+      "Allen",
+      "BICAN"
+    ]
+  },
+  {
+    "id": "homba",
+    "acronym": "HOMBA",
+    "name": "Harmonized Ontology of Mammalian Brain Anatomy",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "A BICAN ontology that harmonizes brain anatomy terms across mammalian brain atlases. Built with the Ontology Development Kit; early-stage.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Mammals"
+    ],
+    "maintainer": "BICAN / Cellular Semantics",
+    "homepage": "https://github.com/brain-bican/harmonized_ontology_of_mammalian_brain_anatomy_ontology",
+    "repository": "https://github.com/brain-bican/harmonized_ontology_of_mammalian_brain_anatomy_ontology",
+    "download": "https://purl.brain-bican.org/ontology/homba.owl",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "brain regions",
+      "cross-species",
+      "harmonization",
+      "BICAN"
+    ]
+  },
+  {
+    "id": "scao",
+    "acronym": "SCAO",
+    "name": "Spinal Cord Atlas Ontology",
+    "category": "anatomy",
+    "kind": "ontology",
+    "description": "An early-stage BICAN ontology repository for spinal cord atlas structures, set up with the Ontology Development Kit.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Mammals"
+    ],
+    "maintainer": "BICAN",
+    "homepage": "https://github.com/brain-bican/scao",
+    "repository": "https://github.com/brain-bican/scao",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "spinal cord",
+      "BICAN"
+    ]
+  },
+  {
+    "id": "bicano",
+    "acronym": "BICANO",
+    "name": "BICAN Application Ontology",
+    "category": "metadata",
+    "kind": "ontology",
+    "description": "An application ontology covering research, research subjects and research results in BICAN, linking experimental knowledge to how data is distributed. It builds on earlier BICCN and Brain Data Standards work.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human",
+      "Mouse",
+      "Primate"
+    ],
+    "maintainer": "Allen Institute / University of Maryland",
+    "license": "CC BY 4.0",
+    "homepage": "https://github.com/brain-bican/bican_application_ontology",
+    "repository": "https://github.com/brain-bican/bican_application_ontology",
+    "download": "https://purl.brain-bican.org/ontology/bicano.owl",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Application ontology for consortium data"
+      }
+    ],
+    "tags": [
+      "application ontology",
+      "BICAN"
+    ]
+  },
+  {
+    "id": "bito",
+    "acronym": "BITO",
+    "name": "BICAN Techniques Ontology",
+    "category": "terminology",
+    "kind": "ontology",
+    "description": "An ontology of experimental techniques and methods used across the BRAIN Initiative Cell Atlas Network, to help scientists describe how data were produced.",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "N/A"
+    ],
+    "maintainer": "BICAN",
+    "homepage": "https://github.com/brain-bican/techniques_ontology",
+    "repository": "https://github.com/brain-bican/techniques_ontology",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "techniques",
+      "methods",
+      "BICAN"
+    ]
+  },
+  {
+    "id": "bican-metadata-schemas",
+    "acronym": "BICAN metadata",
+    "name": "BICAN Metadata Schemas",
+    "category": "metadata",
+    "kind": "schema",
+    "description": "Metadata schemas and curation documentation for BICAN data, each reviewed and standardized by the BICAN Metadata and Ontologies Integration Working Group (MOWG).",
+    "formats": [
+      "Schema files"
+    ],
+    "species": [
+      "Human",
+      "Mouse",
+      "Primate"
+    ],
+    "maintainer": "BICAN MOWG",
+    "homepage": "https://github.com/brain-bican/metadata-schemas",
+    "repository": "https://github.com/brain-bican/metadata-schemas",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BICAN",
+        "url": "https://www.portal.brain-bican.org/",
+        "note": "Consortium metadata curation"
+      }
+    ],
+    "tags": [
+      "metadata",
+      "curation",
+      "BICAN"
+    ]
+  }
+]

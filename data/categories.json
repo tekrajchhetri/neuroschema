@@ -1,0 +1,13 @@
+[
+  { "id": "anatomy", "name": "Anatomy & Brain Regions", "icon": "brain", "blurb": "Structures of the nervous system, from multi-species anatomy to species-specific brain region hierarchies." },
+  { "id": "atlases", "name": "Atlases & Reference Spaces", "icon": "grid", "blurb": "Coordinate frameworks and parcellations that anchor data to a common brain space." },
+  { "id": "cells", "name": "Cell Types", "icon": "cell", "blurb": "Neuron and glia types, cell taxonomies and the schemas used to annotate them." },
+  { "id": "behavior", "name": "Behavior & Cognition", "icon": "spark", "blurb": "Behaviors, mental processes, cognitive tasks and experimental paradigms." },
+  { "id": "disease", "name": "Disease & Phenotype", "icon": "pulse", "blurb": "Neurological and psychiatric diseases, clinical phenotypes and disorder-specific ontologies." },
+  { "id": "molecular", "name": "Molecular & Synaptic", "icon": "molecule", "blurb": "Genes, synaptic functions, neurotransmitters and other chemical entities." },
+  { "id": "imaging", "name": "Neuroimaging & Events", "icon": "scan", "blurb": "Standards for organising and describing MRI, EEG/MEG data, results and experimental events." },
+  { "id": "physiology", "name": "Neurophysiology Data", "icon": "wave", "blurb": "Schemas and terminologies for electrophysiology, optical physiology and behavioral recordings." },
+  { "id": "modeling", "name": "Computational Modeling", "icon": "node", "blurb": "Languages and ontologies for describing neuron, network and brain models." },
+  { "id": "metadata", "name": "Metadata & Knowledge Graphs", "icon": "graph", "blurb": "Metadata models and knowledge-graph schemas used by neuroscience archives and consortia." },
+  { "id": "terminology", "name": "Umbrella Terminologies", "icon": "book", "blurb": "Broad neuroscience vocabularies and term registries that span many domains." }
+]

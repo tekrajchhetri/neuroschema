@@ -1,0 +1,41 @@
+name: Evaluate catalog
+
+on:
+  schedule:
+    - cron: "17 4 * * 1" # every Monday 04:17 UTC
+  push:
+    branches: [main]
+    paths: [data/catalog.json] # re-evaluate right after a submission is merged
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: evaluate
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BOT_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run automated evaluation
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          BIOPORTAL_API_KEY: ${{ secrets.BIOPORTAL_API_KEY }}
+        run: node scripts/evaluate.mjs
+      - run: node scripts/build.mjs
+      - name: Commit results and the archived run
+        run: |
+          git add data/evaluation.json data/runs
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git config user.name "neuroschema-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Evaluation run $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push

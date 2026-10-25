@@ -1,0 +1,64 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate catalog (structure, duplicates)
+        run: node scripts/validate.mjs
+
+      - name: Build site
+        run: node scripts/build.mjs
+
+      - name: Find changed entries
+        if: github.event_name == 'pull_request'
+        id: changed
+        run: echo "ids=$(node scripts/changed-entries.mjs origin/${{ github.base_ref }})" >> "$GITHUB_OUTPUT"
+
+      # Online checks: links resolve, DOIs exist and match, OLS ids are real.
+      - name: Check links, DOIs and registry ids
+        if: github.event_name == 'pull_request' && steps.changed.outputs.ids != ''
+        env:
+          ONLY: ${{ steps.changed.outputs.ids }}
+        run: node scripts/validate.mjs --online --report validation.md
+
+      - name: FAIR evaluation preview
+        if: always() && github.event_name == 'pull_request' && steps.changed.outputs.ids != ''
+        env:
+          ONLY: ${{ steps.changed.outputs.ids }}
+          NO_ARCHIVE: "1"
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/evaluate.mjs
+          node scripts/score-report.mjs > evaluation.md
+
+      - name: Write summary
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          { cat validation.md 2>/dev/null || echo "### ✅ Catalog validation passed"; echo; cat evaluation.md 2>/dev/null || true; } > comment.md
+          cat comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Comments need write access, which PRs from forks don't get; the job summary above always works.
+      - name: Comment on pull request
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: neuroschema-checks
+          path: comment.md
