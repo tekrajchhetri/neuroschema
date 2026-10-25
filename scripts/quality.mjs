@@ -39,6 +39,8 @@ async function download(url, file) {
   const len = Number(res.headers.get("content-length") || 0);
   if (len > MAX_MB * 1e6) throw new Error(`file is ${(len / 1e6).toFixed(0)} MB (limit ${MAX_MB} MB)`);
   await pipeline(Readable.fromWeb(res.body), createWriteStream(file));
+  const head = (await readFile(file, { encoding: "utf8" })).slice(0, 2000).trimStart().toLowerCase();
+  if (head.startsWith("<!doctype html") || head.startsWith("<html")) throw new Error(`resolves to an HTML page (${res.url}), not the ontology file`);
   const size = (await stat(file)).size;
   if (size > MAX_MB * 1e6) throw new Error(`file is ${(size / 1e6).toFixed(0)} MB (limit ${MAX_MB} MB)`);
   return createHash("sha256").update(await readFile(file)).digest("hex");
@@ -58,6 +60,9 @@ async function robotChecks(file) {
     const n = existsSync(path.join(work, "unsat.ofn")) ? ((await readFile(path.join(work, "unsat.ofn"), "utf8")).match(/^Declaration\(Class/gm) || []).length : null;
     Object.assign(result, { consistent: true, unsatisfiable: n ?? 1 });
   } else Object.assign(result, { consistent: null, reasonError: r.out.slice(-400) });
+
+  const prof = await run("java", [...java, "validate-profile", "--input", file, "--profile", "DL", "--output", path.join(work, "profile.txt")], { maxBuffer: 1 << 26, timeout: 20 * 60e3 }).then(() => true, () => false);
+  result.owl2dl = prof;
 
   const rep = path.join(work, "report.tsv");
   await run("java", [...java, "report", "--input", file, "--fail-on", "none", "--output", rep], { maxBuffer: 1 << 26, timeout: 20 * 60e3 }).catch(() => {});
@@ -89,27 +94,82 @@ async function oops(url) {
   }
 }
 
+// Pitfall scan, in order of preference:
+//   1. OOPS! CLI in a local Docker container (OOPS_IMAGE, built from docker/oops) — no external dependency
+//   2. the public OOPS! web service
+//   3. NeuroSchema's Python scan of the OOPS! pitfalls that are purely structural (scripts/pitfalls.py)
+const OOPS_IMAGE = process.env.OOPS_IMAGE || null;
+const PY = process.env.PYTHON || "python3";
+const PY_MAX_MB = Number(process.env.PY_MAX_MB || 80);
+const pyJson = async (args) => JSON.parse((await run(PY, [path.join(root, "scripts/pitfalls.py"), ...args], { maxBuffer: 1 << 26, timeout: 30 * 60e3 })).stdout);
+
+async function oopsDocker(file) {
+  const dir = path.dirname(file);
+  const report = path.join(dir, "tstOut.model.ttl");
+  await rm(report, { force: true });
+  await run("docker", ["run", "--rm", "-v", `${dir}:/work`, OOPS_IMAGE, "--input-file", `/work/${path.basename(file)}`], { maxBuffer: 1 << 28, timeout: 45 * 60e3 });
+  if (!existsSync(report)) throw new Error("OOPS! produced no report");
+  const r = await pyJson(["parse-oops", report]);
+  await rm(report, { force: true });
+  if (r.error) throw new Error(r.error);
+  return r;
+}
+
+async function pitfallScan(e, file) {
+  const attempts = [];
+  if (OOPS_IMAGE && file) {
+    try {
+      return { ...(await oopsDocker(file)), engine: "OOPS! (local Docker)", attempts };
+    } catch (err) {
+      attempts.push(`local OOPS!: ${err.message.slice(0, 200)}`);
+    }
+  }
+  if (!process.env.SKIP_OOPS_WEB) {
+    const o = await oops(e.download);
+    if (!o.error) return { ...o, engine: "OOPS! web service", attempts };
+    attempts.push(`OOPS! web service: ${o.error}`);
+  }
+  if (file && (await stat(file)).size <= PY_MAX_MB * 1e6) {
+    try {
+      const r = await pyJson(["scan", file]);
+      if (!r.error) return { ...r, attempts };
+      attempts.push(`Python scan: ${r.error}`);
+    } catch (err) {
+      attempts.push(`Python scan: ${err.message.slice(0, 200)}`);
+    }
+  } else if (file) attempts.push(`Python scan: file larger than ${PY_MAX_MB} MB`);
+  return { error: "no pitfall scanner succeeded", attempts };
+}
+
 const targets = catalog.filter((e) => isOntology(e) && e.download && (!only || only.has(e.id)));
-console.log(`Quality checks for ${targets.length} ontologies (ROBOT: ${robotVersion || "not available"})`);
+console.log(`Quality checks for ${targets.length} ontologies (ROBOT: ${robotVersion || "not available"}; OOPS! image: ${OOPS_IMAGE || "none"})`);
 for (const e of targets) {
   const out = path.join(outDir, `${e.id}.json`);
   const prev = existsSync(out) ? JSON.parse(await readFile(out, "utf8")) : {};
   const rec = { id: e.id, artefact: e.download, checkedAt: new Date().toISOString() };
-  if (ROBOT && !onDashboard.has(e.obo)) {
-    const file = path.join(work, `${e.id}.owl`);
+  const dir = path.join(work, e.id);
+  await mkdir(dir, { recursive: true });
+  const file = path.join(dir, "ontology.owl");
+  let have = false;
+  try {
+    rec.sha256 = await download(e.download, file);
+    have = true;
+  } catch (err) {
+    rec.downloadError = err.message;
+  }
+  // Consistency: OBO Dashboard ontologies are already reasoned over there.
+  if (ROBOT && have && !onDashboard.has(e.obo)) {
     try {
-      rec.sha256 = await download(e.download, file);
       rec.robot = { ...(await robotChecks(file)), checkedAt: new Date().toISOString(), sha256: rec.sha256 };
     } catch (err) {
       rec.robot = prev.robot ? { ...prev.robot, stale: true, staleReason: err.message } : { error: err.message };
-    } finally {
-      await rm(file, { force: true });
     }
   } else if (prev.robot) rec.robot = prev.robot;
   if (!process.env.SKIP_OOPS) {
-    const o = await oops(e.download);
-    rec.oops = o.error && prev.oops && !prev.oops.error ? { ...prev.oops, stale: true, staleReason: o.error } : o;
+    const o = await pitfallScan(e, have ? file : null);
+    rec.oops = o.error && prev.oops && !prev.oops.error ? { ...prev.oops, stale: true, staleReason: o.attempts?.join("; ") } : { ...o, checkedAt: new Date().toISOString(), sha256: rec.sha256 };
   } else if (prev.oops) rec.oops = prev.oops;
+  await rm(dir, { recursive: true, force: true });
   await writeFile(out, JSON.stringify(rec, null, 2) + "\n");
-  console.log(`  ${e.id}: ${rec.robot ? (rec.robot.error ? `robot error (${rec.robot.error})` : `consistent=${rec.robot.consistent} unsat=${rec.robot.unsatisfiable} report=${JSON.stringify(rec.robot.robot || {})}`) : "robot skipped (OBO Dashboard)"}; oops ${rec.oops?.error ? `unavailable (${rec.oops.error})` : rec.oops ? `${rec.oops.critical} critical / ${rec.oops.important} important` : "skipped"}`);
+  console.log(`  ${e.id}: ${rec.robot ? (rec.robot.error ? `robot error (${rec.robot.error})` : `consistent=${rec.robot.consistent} unsat=${rec.robot.unsatisfiable} dl=${rec.robot.owl2dl} report=${JSON.stringify(rec.robot.robot || {})}`) : "robot skipped"}; pitfalls ${rec.oops?.error ? `unavailable (${rec.oops.attempts?.join(" | ")})` : rec.oops ? `${rec.oops.critical}C/${rec.oops.important}I/${rec.oops.minor}M via ${rec.oops.engine}` : "skipped"}`);
 }

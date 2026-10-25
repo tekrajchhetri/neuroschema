@@ -70,3 +70,23 @@
 **Context** – The home page listed every resource, and search only filtered that list.
 **Decision** – The home page shows the hero, domains, the top 6 by score and the 6 most recently updated. `/catalog/` holds the full filterable list, and `/search/?q=` is a ranked results page over `search-index.json`. Ranking weights matches by field: acronym > name > tags > modules > description. The schema.org SearchAction points to `/search/`.
 **Consequences** – Links to `/#explore` were replaced by `/catalog/`.
+
+## D-013: Consistency-centred quality, penalties for critical problems, local OOPS! + Python fallback   (2026-10-25, status: accepted; rubric v3.2)
+**Context** – The public OOPS! service is often unreachable. The owner asked that logical consistency carry more weight, that critical problems count against a resource, and that processing not rely on one runtime or one external service.
+**Decision** –
+- Q is now "Ontology consistency & quality". Logical consistency is worth 10 of its 20 points; the rest is OWL 2 DL 2, BFO/COB 3, RO 1, ROBOT report 3 and a critical-pitfall check 1. Nothing is rescaled when a scanner is unavailable.
+- Penalties (cap 50):
+  - inconsistent −20, with the score capped at 54
+  - unsatisfiable classes −5
+  - critical pitfall types −3 each (max −12)
+  - ROBOT errors −3/−6/−10
+- Pitfall scanning runs in this order:
+  1. the OOPS! CLI built from source at a pinned commit in `docker/oops`, run locally
+  2. the public OOPS! service
+  3. `scripts/pitfalls.py`, an rdflib scan of 11 structural OOPS! pitfalls with the same codes and severities: P06, P19, P39, P38, P41, P34, P35, P11, P10, P08, P13
+- The same Python script converts OOPS! Turtle reports into JSON.
+- `quality.mjs` records which engine produced each result and every failed attempt.
+
+**Why** – Consistency is the property a reasoner can check objectively and that downstream users depend on most. A local OOPS! removes the external dependency. Python/rdflib keeps a pitfall check alive even without Docker or Java. Rejected: rescaling when a scan is unavailable, which hid problems.
+
+**Consequences** – CI builds the OOPS! image (cached with buildx) and installs `requirements.txt`. OOPS! loads an ontology's imports, so very large ontologies may time out and fall back to the Python scan.

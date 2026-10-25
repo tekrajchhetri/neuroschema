@@ -282,10 +282,18 @@ async function sniffArtifact(url) {
     }
     await reader.cancel().catch(() => {});
     const pick = (...res) => res.map((r) => buf.match(r)?.[1]).find(Boolean)?.trim() || null;
+    // A PURL that redirects to a web page is not a working artefact.
+    const ctype = res.headers.get("content-type")?.split(";")[0] || null;
+    const head = buf.slice(0, 2000).trimStart().toLowerCase();
+    const isHtml = (ctype === "text/html" && !/rdf:rdf|owl:ontology|@prefix|<rdf/.test(head)) || head.startsWith("<!doctype html") || head.startsWith("<html");
+    const isRdf = /rdf:rdf|owl:ontology|@prefix|@base|<rdf|prefix\s+\w*:|ontology\(|format-version:|"@context"|^\s*<https?:/m.test(buf.slice(0, 20000)) || /^(id|name|title|classes|slots|\$schema|types):/m.test(buf.slice(0, 5000));
     const versionIri = pick(/owl:versionIRI\s+rdf:resource="([^"]+)"/, /owl:versionIRI\s+<([^>]+)>/, /"versionIRI"\s*:\s*"([^"]+)"/, /versionIRI\s*\(?\s*<([^>]+)>/);
     const versionInfo = pick(/owl:versionInfo[^>]*>([^<]{1,80})</, /owl:versionInfo\s+"([^"]{1,80})"/, /^data-version:\s*(\S+)/m, /^format-version:\s*\S+[\s\S]*?^data-version:\s*(\S+)/m, /^version:\s*["']?([\w.\-]{1,40})/m, /"version"\s*:\s*"([^"]{1,40})"/);
+    // Not a lookup failure: the artefact genuinely resolves to a web page. Record it (never carried forward).
+    if (isHtml) return { source: res.url || url, isHtml: true, note: `resolves to an HTML page (${res.url || url}), not an ontology/schema file`, fetchedAt: now() };
     return {
       source: res.url || url,
+      isRdf,
       ...(versionIri ? { versionIri } : {}),
       ...(versionInfo ? { versionInfo } : {}),
       etag: res.headers.get("etag") || null,

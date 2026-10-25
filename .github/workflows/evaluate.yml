@@ -29,9 +29,25 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - name: Ontology quality checks (ROBOT reasoner + report, OOPS!)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r requirements.txt
+      # OOPS! runs locally from source (docker/oops) so pitfall scans don't depend on the public server.
+      - uses: docker/setup-buildx-action@v3
+      - name: Build OOPS! image (cached)
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/oops
+          tags: neuroschema/oops:latest
+          load: true
+          cache-from: type=gha,scope=oops
+          cache-to: type=gha,mode=max,scope=oops
+      - name: Ontology quality checks (ROBOT reasoner/report, OOPS! pitfalls, Python fallback)
+        timeout-minutes: 240
         env:
           ROBOT_VERSION: v1.9.7
+          OOPS_IMAGE: neuroschema/oops:latest
         run: |
           curl -sSL -o robot.jar "https://github.com/ontodev/robot/releases/download/${ROBOT_VERSION}/robot.jar"
           ROBOT_JAR="$PWD/robot.jar" node scripts/quality.mjs

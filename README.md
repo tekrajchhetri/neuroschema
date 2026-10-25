@@ -10,7 +10,9 @@ npm run build             # build into dist/ (also validates the catalog)
 npm run validate          # structural checks: fields, ids, URLs, DOIs format, duplicates
 npm run validate:online   # + links resolve, DOIs exist in Crossref, OLS ids are real
 npm run evaluate          # run the evaluation → data/evaluation.json + data/runs/<run>.json
-ROBOT_JAR=robot.jar node scripts/quality.mjs   # ontology quality checks (needs Java); CI runs this weekly
+docker build -t neuroschema/oops docker/oops     # OOPS! pitfall scanner, built from source
+OOPS_IMAGE=neuroschema/oops ROBOT_JAR=robot.jar node scripts/quality.mjs   # quality checks; CI runs this weekly
+python3 scripts/pitfalls.py scan ontology.owl   # Python pitfall scan (fallback when OOPS! can't run)
 npm run rescore           # recompute scores from stored facts after a rubric change (no network)
 ```
 
@@ -26,10 +28,10 @@ Requires Node ≥ 18. There's nothing to `npm install`. Set `GITHUB_TOKEN` local
 | A | Accessible | 12 | homepage, artefact over HTTP(S), metadata persists in a registry |
 | I | Interoperable | 12 | formal format, semantic-web IRIs, imports other vocabularies |
 | R | Reusable | 12 | open license, version declared *inside* the artefact, OBO principles pass rate |
-| Q | Ontology quality | 20 | upper ontology (BFO/COB) + RO, reasoner consistency, ROBOT report, OOPS! pitfalls |
+| Q | Ontology consistency & quality | 20 | **logical consistency (10)**, OWL 2 DL, BFO/COB + RO, ROBOT report, critical pitfalls |
 | M | Maintenance | 16 | recency + releases in the last 12 months |
 | U | Adoption | 16 | adopting projects, reuse by other ontologies, stars/citations |
-| P | Inactivity penalty | −30 | −4 per year inactive after 1 year (max −20), −10 more if archived/legacy/OBO-inactive |
+| P | Penalties | −50 | inactivity (−4/year after 1 year, max −20; −10 if archived/legacy/OBO-inactive), inconsistent −20 (score capped at 54), unsatisfiable classes −5, critical pitfalls −3 each (max −12), ROBOT errors up to −10 |
 
 Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scripts/rubric.mjs`](scripts/rubric.mjs).
 

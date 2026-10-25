@@ -5,7 +5,7 @@
 // ROBOT quality report and OOPS! pitfalls. M = maintenance, U = adoption, P = inactivity penalty.
 // Change weights here and bump RUBRIC_VERSION; `npm run rescore` recomputes from stored facts.
 
-export const RUBRIC_VERSION = "3.0";
+export const RUBRIC_VERSION = "3.3";
 
 export const MACHINE_FORMATS = ["OWL", "OBO", "Turtle", "RDF", "JSON-LD", "LinkML", "JSON Schema", "SHACL", "YAML schema", "XSD"];
 export const SEMANTIC_FORMATS = ["OWL", "OBO", "Turtle", "RDF", "JSON-LD", "SHACL"];
@@ -50,9 +50,9 @@ export const RUBRIC = [
     how: "R1.1 — a clear license: a recognised open license scores 5, any other stated license 2. R1.2 — provenance of releases: a version IRI or version info inside the artefact scores 4; a release tag or registry version only, 2. R1.3 — meets community standards, measured by the share of OBO Foundry principle checks passed on the OBO Dashboard (× 3). Resources outside the OBO Foundry have no independent compliance report and score 0 here.",
   },
   {
-    key: "quality", symbol: "Q", label: "Ontology quality", fair: false, max: 20, ontologyOnly: true,
-    formula: "u(upper ontology) + c(consistency) + q(ROBOT report) + o(OOPS! pitfalls)",
-    how: "Applies to ontologies (OWL/OBO/RDF artefacts). Upper-ontology alignment: imports BFO or COB (4) and the Relation Ontology (2). Logical consistency from a reasoner run (OBO Dashboard, or ROBOT + ELK in our CI): consistent with no unsatisfiable classes 6; consistent with unsatisfiable classes 2; inconsistent or never checked 0. ROBOT quality report: no errors 2, plus warnings per class ≤ 0.05 → 2, ≤ 0.5 → 1. OOPS! pitfall scan: no critical pitfalls 2, plus ≤ 2 important pitfall types 2. If the OOPS! service is unavailable its 4 points are excluded and Q is scaled to 20. Schemas, atlases and other non-ontology resources are not scored on Q; their total is scaled to 100 from the remaining 80 points.",
+    key: "quality", symbol: "Q", label: "Ontology consistency & quality", fair: false, max: 20, ontologyOnly: true,
+    formula: "c(logical consistency) + 2·[OWL 2 DL] + u(upper ontology) + q(quality report)",
+    how: "Applies to ontologies (OWL/OBO/RDF artefacts). Logical consistency carries half the weight: a reasoner run (OBO Dashboard, or ROBOT + ELK in our CI) that finds the ontology consistent with no unsatisfiable classes scores 10; consistent with 1–5 unsatisfiable classes 5; more than 5 → 2; inconsistent or never checked 0. OWL 2 DL profile 2. Upper-ontology alignment: imports BFO or COB 3, the Relation Ontology 1. Quality report: no ROBOT errors 2, warnings per class ≤ 0.05 → 1, and a pitfall scan with no critical pitfalls 1 (OOPS! when reachable, otherwise the ROBOT report). Schemas, atlases and other non-ontology resources are not scored on Q; their total is scaled to 100 from the remaining 80 points.",
   },
   {
     key: "maintenance", symbol: "M", label: "Maintenance", fair: false, max: 16,
@@ -67,10 +67,11 @@ export const RUBRIC = [
 ];
 
 export const PENALTY = {
-  key: "inactivity", symbol: "P", label: "Inactivity penalty",
-  perYear: 4, graceYears: 1, timeCap: 20, status: 10, unknown: 5, cap: 30,
-  formula: "min(30, min(20, 4·max(0, years since last activity − 1)) + 10·[archived, legacy or OBO-inactive]); 5 if no activity evidence",
-  how: "Unmaintained resources are progressively marked down. After a one-year grace period, every further year without public activity deducts 4 points (2 years → −4, 3 → −8, … 6+ → −20). Archived repositories, legacy entries and OBO-inactive/orphaned/obsolete ontologies lose a further 10. With no activity evidence at all, 5 points are deducted. Capped at 30; the total never drops below 0.",
+  key: "inactivity", symbol: "P", label: "Penalties (inactivity & inconsistency)",
+  perYear: 4, graceYears: 1, timeCap: 20, status: 10, unknown: 5, inconsistent: 20, unsat: 5, perCritical: 3, criticalCap: 12, cap: 50, inconsistentCap: 54,
+  robotErrors: [{ min: 100, pts: 10 }, { min: 10, pts: 6 }, { min: 1, pts: 3 }, { min: 0, pts: 0 }],
+  formula: "min(50, inactivity + 10·[archived/legacy/OBO-inactive] + 20·[inconsistent] + 5·[unsatisfiable classes] + min(12, 3·critical pitfall types) + e(ROBOT errors)). Inconsistent ontologies are capped at 54 (grade D).",
+  how: "Problems are marked down, not just left unrewarded. Inactivity: after a one-year grace period every further year without public activity deducts 4 points (up to 20); archived, legacy or OBO-inactive resources lose a further 10; with no activity evidence at all, 5. Consistency: a logically inconsistent ontology loses 20 and can score no higher than 54 (grade D); one with unsatisfiable classes loses 5. Critical pitfalls (OOPS!, e.g. cycles in the class hierarchy, multiple domains/ranges, ambiguous namespace) cost 3 per pitfall type, up to 12. ROBOT report errors cost 3 (1–9), 6 (10–99) or 10 (≥ 100). The penalty is capped at 50 and the total never drops below 0.",
 };
 
 export const FAIR_MAX = RUBRIC.filter((r) => r.fair).reduce((s, r) => s + r.max, 0);
@@ -161,15 +162,20 @@ export function scoreEntry(entry, facts) {
   const quality = facts.quality && !facts.quality.error ? facts.quality : null;
 
   // F
+  // An artefact "works" only if the download resolves to the file itself, not to an HTML page.
+  const artBroken = !!facts.artifact?.isHtml;
   const pid = isPid(entry.download) ? entry.download : entry.obo ? `http://purl.obolibrary.org/obo/${entry.obo}.owl` : null;
-  add("findable", "Persistent identifier (F1)", pid ? 4 : 0, 4, pid ? hostOf(pid) : "no PURL / w3id / DOI for the artefact");
+  const pidBroken = pid && pid === entry.download && artBroken;
+  add("findable", "Persistent identifier (F1)", pid && !pidBroken ? 4 : 0, 4, !pid ? "no PURL / w3id / DOI for the artefact" : pidBroken ? `${hostOf(pid)} PURL does not resolve to the artefact (redirects to a web page)` : hostOf(pid));
   add("findable", "Indexed in services (F4)", tier(T.registries, regs.length), 5, regs.length ? `${regs.length}: ${regs.join(", ")}` : "not indexed anywhere");
   add("findable", "Citable reference (F2)", entry.publications?.length ? 3 : 0, 3, entry.publications?.length ? `doi:${entry.publications[0].doi}` : "no reference publication listed");
 
   // A
   add("accessible", "Homepage reachable", reachable(homepage) ? 3 : 0, 3, homepage ? `HTTP ${homepage.code || homepage.error}` : "no homepage listed");
-  const okSrc = [download, repository].filter(Boolean).find(reachable);
-  add("accessible", "Artefact retrievable over HTTP(S) (A1)", okSrc ? 6 : 0, 6, okSrc ? `${okSrc === download ? "download" : "repository"} HTTP ${okSrc.code}` : download || repository ? "unreachable" : "no download or repository listed");
+  const dlOk = reachable(download) && !artBroken;
+  const repoOk = reachable(repository);
+  add("accessible", "Artefact retrievable over HTTP(S) (A1)", dlOk ? 6 : repoOk ? 3 : 0, 6,
+    dlOk ? `download HTTP ${download.code}` : download && artBroken ? `download resolves to a web page, not the file${repoOk ? "; repository reachable" : ""}` : repoOk ? "only the source repository is reachable (no direct download)" : download || repository ? "unreachable" : "no download or repository listed");
   const persist = regs.filter((x) => ["Bioregistry", "OBO Foundry"].includes(x));
   add("accessible", "Metadata persists in a registry (A2)", persist.length ? 3 : 0, 3, persist.length ? persist.join(", ") : "not in Bioregistry or OBO Foundry");
 
@@ -193,41 +199,28 @@ export function scoreEntry(entry, facts) {
     add("reusable", "Community standards (R1.3)", Math.round((3 * pass) / (vals.length || 1)), 3, `OBO principles: ${pass}/${vals.length} checks pass`);
   } else add("reusable", "Community standards (R1.3)", 0, 3, "no independent compliance report (not on the OBO Dashboard)");
 
-  // Q — ontology quality
+  // Q — ontology consistency & quality
   const qApplies = isOntology(entry);
-  let qAvail = 20;
+  const cons = dash?.consistent ?? quality?.consistent ?? null;
+  const unsat = dash?.unsatisfiable ?? quality?.unsatisfiable ?? null;
   if (qApplies) {
+    const consSrc = dash?.consistent != null ? "OBO Dashboard" : quality?.consistent != null ? `ROBOT ${quality.reasoner || "ELK"} in NeuroSchema CI` : null;
+    const cPts = cons === true ? (!unsat ? 10 : unsat <= 5 ? 5 : 2) : 0;
+    add("quality", "Logical consistency", cPts, 10, cons == null ? "never checked by a reasoner" : `${cons ? "consistent" : "INCONSISTENT"}, ${unsat ?? 0} unsatisfiable classes (${consSrc})`);
+    const dl = dash?.owl2dl ?? quality?.owl2dl ?? null;
+    add("quality", "OWL 2 DL profile", dl === true ? 2 : 0, 2, dl == null ? "profile not checked" : dl ? "in OWL 2 DL" : "outside OWL 2 DL");
     const upper = imp.filter((x) => UPPER_ONTOLOGIES.includes(x));
-    add("quality", "Upper-ontology alignment", upper.length ? 4 : 0, 4, upper.length ? `imports ${upper.join(", ").toUpperCase()}` : "no BFO/COB/DOLCE import found");
+    add("quality", "Upper-ontology alignment", upper.length ? 3 : 0, 3, upper.length ? `imports ${upper.join(", ").toUpperCase()}` : "no BFO/COB/DOLCE import found");
     const rel = imp.filter((x) => RELATION_ONTOLOGIES.includes(x));
-    add("quality", "Standard relations (RO)", rel.length ? 2 : 0, 2, rel.length ? "imports RO" : "does not import the Relation Ontology");
-    const cons = dash?.consistent ?? quality?.consistent;
-    const unsat = dash?.unsatisfiable ?? quality?.unsatisfiable;
-    const consSrc = dash?.consistent != null ? "OBO Dashboard" : quality?.consistent != null ? `ROBOT ${quality.reasoner || "ELK"} (NeuroSchema CI)` : null;
-    add("quality", "Logical consistency", cons === true ? (unsat ? 2 : 6) : 0, 6, cons == null ? "never checked by a reasoner" : `${cons ? "consistent" : "INCONSISTENT"}${unsat ? `, ${unsat} unsatisfiable classes` : ", 0 unsatisfiable classes"} (${consSrc})`);
+    add("quality", "Standard relations (RO)", rel.length ? 1 : 0, 1, rel.length ? "imports RO" : "does not import the Relation Ontology");
     const rr = dash?.robot || quality?.robot;
-    if (rr) {
-      const classes = dash?.classes || quality?.classes || facts.ols?.terms || 1;
-      const dens = (rr.WARN || 0) / classes;
-      add("quality", "ROBOT report: no errors", rr.ERROR ? 0 : 2, 2, `${rr.ERROR || 0} errors`);
-      add("quality", "ROBOT report: warning density", T.warnDensity.find((t) => dens <= t.max).pts, 2, `${rr.WARN || 0} warnings / ${classes} classes = ${dens.toFixed(2)}`);
-    } else {
-      add("quality", "ROBOT report: no errors", 0, 2, "no ROBOT report available");
-      add("quality", "ROBOT report: warning density", 0, 2, "no ROBOT report available");
-    }
+    const classes = dash?.classes || quality?.classes || facts.ols?.terms || 1;
+    const dens = rr ? (rr.WARN || 0) / classes : null;
+    add("quality", "ROBOT report: no errors", rr ? (rr.ERROR ? 0 : 2) : 0, 2, rr ? `${rr.ERROR || 0} errors` : "no ROBOT report available");
+    add("quality", "ROBOT report: warning density", rr && dens <= 0.05 ? 1 : 0, 1, rr ? `${rr.WARN || 0} warnings / ${classes} classes = ${dens.toFixed(2)}` : "no ROBOT report available");
     const oops = facts.oops && !facts.oops.error ? facts.oops : null;
-    if (oops) {
-      add("quality", "OOPS!: no critical pitfalls", oops.critical ? 0 : 2, 2, `${oops.critical} critical pitfall types`);
-      add("quality", "OOPS!: few important pitfalls", oops.important <= 2 ? 2 : 0, 2, `${oops.important} important pitfall types`);
-    } else {
-      qAvail -= 4;
-      b.quality.notes.push("OOPS! unavailable — excluded and Q scaled");
-    }
-    if (qAvail < 20) {
-      const raw = b.quality.score;
-      b.quality.score = Math.round((raw * 20) / qAvail);
-      b.quality.steps.push({ label: `Scaled ${raw}/${qAvail} → 20`, pts: b.quality.score - raw, max: 0, detail: "OOPS! pitfall scan unavailable for this run" });
-    }
+    if (oops) add("quality", "Pitfall scan: no critical pitfalls", oops.critical ? 0 : 1, 1, `${oops.critical} critical, ${oops.important} important, ${oops.minor} minor pitfall types (${oops.engine || "OOPS!"})`);
+    else add("quality", "Pitfall scan: no critical pitfalls", rr && !rr.ERROR ? 1 : 0, 1, rr ? `no pitfall scan yet; ROBOT report has ${rr.ERROR || 0} errors` : "no pitfall scan or ROBOT report yet");
   } else {
     b.quality.applicable = false;
     b.quality.steps.push({ label: "Not applicable", pts: 0, max: 0, detail: `${entry.kind} without an OWL/OBO/RDF artefact; total scaled from 80 to 100` });
@@ -264,18 +257,42 @@ export function scoreEntry(entry, facts) {
   }
   const statusP = inactiveReason ? PENALTY.status : 0;
   pSteps.push({ label: "Inactive status", pts: -statusP, detail: inactiveReason || "not archived, legacy or inactive" });
-  const pTotal = Math.min(PENALTY.cap, timeP + statusP);
+  let consP = 0;
+  if (qApplies && cons === false) {
+    consP = PENALTY.inconsistent;
+    pSteps.push({ label: "Logically inconsistent", pts: -consP, detail: "a reasoner found the ontology inconsistent; score capped at 54" });
+  } else if (qApplies && cons === true && unsat > 0) {
+    consP = PENALTY.unsat;
+    pSteps.push({ label: "Unsatisfiable classes", pts: -consP, detail: `${unsat} unsatisfiable classes` });
+  } else if (qApplies) pSteps.push({ label: "Consistency", pts: 0, detail: cons === true ? "consistent, no unsatisfiable classes" : "not yet checked by a reasoner" });
+  let pitP = 0, errP = 0;
+  if (qApplies) {
+    const oopsF = facts.oops && !facts.oops.error ? facts.oops : null;
+    if (oopsF?.critical) {
+      pitP = Math.min(PENALTY.criticalCap, PENALTY.perCritical * oopsF.critical);
+      const codes = (oopsF.pitfalls || []).filter((p) => p.importance === "critical").map((p) => p.code).join(", ");
+      pSteps.push({ label: "Critical pitfalls", pts: -pitP, detail: `${oopsF.critical} critical pitfall type${oopsF.critical === 1 ? "" : "s"}${codes ? ` (${codes})` : ""} × ${PENALTY.perCritical}${pitP === PENALTY.criticalCap ? " (capped)" : ""}` });
+    }
+    const rrF = (dash?.robot || quality?.robot) ?? null;
+    if (rrF?.ERROR) {
+      errP = PENALTY.robotErrors.find((t) => rrF.ERROR >= t.min).pts;
+      pSteps.push({ label: "ROBOT report errors", pts: -errP, detail: `${rrF.ERROR} errors` });
+    }
+  }
+  const pTotal = Math.min(PENALTY.cap, timeP + statusP + consP + pitP + errP);
 
   for (const k of Object.keys(b)) b[k].notes.unshift(...b[k].steps.filter((s) => s.max > 0 && s.pts < s.max).map((s) => `${s.label}: ${s.detail}`));
   const earned = Object.entries(b).filter(([k]) => k !== "quality" || qApplies).reduce((s, [, x]) => s + x.score, 0);
   const possible = qApplies ? 100 : 100 - b.quality.max;
   const scaled = Math.round((earned * 100) / possible);
-  const score = Math.max(0, scaled - pTotal);
+  let score = Math.max(0, scaled - pTotal);
+  if (qApplies && cons === false) score = Math.min(score, PENALTY.inconsistentCap);
   const fair = RUBRIC.filter((r) => r.fair).reduce((s, r) => s + b[r.key].score, 0);
   const grade = GRADES.find((g) => score >= g.min).grade;
   return {
     score, gross: scaled, earned, possible, qualityApplies: qApplies,
-    penalty: { score: -pTotal, reason: pTotal ? pSteps.filter((x) => x.pts).map((x) => x.detail).join("; ") : `active (last activity ${last?.slice(0, 10)})`, steps: pSteps },
+    penalty: { score: -pTotal, reason: pTotal ? pSteps.filter((x) => x.pts).map((x) => x.detail).join("; ") : `no penalties (active${qApplies && cons === true ? ", consistent" : ""})`, steps: pSteps },
+    consistent: qApplies ? cons : null,
     grade, fair, breakdown: b, lastActivity: last, adopterCount: nAd, reuseCount: reuse.length, importCount: imp.length, registries: regs, evaluatedVersion: ver,
   };
 }

@@ -52,6 +52,15 @@ if (online) {
     for (const k of ["homepage", "repository", "download"]) {
       if (!e[k]) continue;
       const code = await head(e[k]);
+      if (k === "download" && code >= 200 && code < 400) {
+        const r = await fetch(e[k], { redirect: "follow", headers: { Range: "bytes=0-2047", "User-Agent": "neuroschema-validator/1.0" } }).catch(() => null);
+        const t = r ? (await r.text()).trimStart().toLowerCase() : "";
+        if (t.startsWith("<!doctype html") || t.startsWith("<html")) {
+          checks.push({ id: e.id, what: "download is the artefact", ok: false, detail: `${e[k]} → HTML page (${r.url})` });
+          errors.push(`entry "${e.id}": download ${e[k]} resolves to an HTML page (${r.url}), not the ontology/schema file`);
+          continue;
+        }
+      }
       const ok = (code >= 200 && code < 400) || [401, 403, 406, 429].includes(code);
       checks.push({ id: e.id, what: `${k} resolves`, ok, detail: `${e[k]} → HTTP ${code || "error"}` });
       if (!ok) errors.push(`entry "${e.id}": ${k} ${e[k]} returned HTTP ${code || "error"}`);

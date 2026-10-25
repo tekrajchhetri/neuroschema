@@ -835,7 +835,7 @@ function workedExample() {
       }).join("")}</tbody>
     </table></div>
     <p class="math">FAIR = ${RUBRIC.filter((x) => x.fair).map((rb) => r.breakdown[rb.key].score).join(" + ")} = <b>${r.fair}</b> / ${FAIR_MAX}</p>
-    <p class="math">Inactivity penalty P = ${r.penalty ? -r.penalty.score : 0} <span class="muted small">(${esc(r.penalty?.reason || "—")})</span></p>
+    <p class="math">Penalty P = ${r.penalty ? -r.penalty.score : 0} <span class="muted small">(${esc(r.penalty?.reason || "—")})</span></p>
     <p class="math">Score = max(0, 100 · (${RUBRIC.filter((rb) => r.breakdown[rb.key]?.applicable !== false).map((rb) => `<span title="${attr(rb.label)}">${r.breakdown[rb.key].score}</span>`).join(" + ")}) / ${r.possible ?? 100} − ${r.penalty ? -r.penalty.score : 0}) = <b>${r.score}</b> → ${r.score} ≥ ${GRADES.find((g) => g.grade === r.grade).min} → grade <b>${r.grade}</b></p>
   </div>`;
 }
@@ -870,15 +870,15 @@ function evaluationPage() {
   <h2>The formula</h2>
   <div class="formula">
     <p class="math big">Score = max(0, 100 · (<span class="fair-group"><b>F</b> + <b>A</b> + <b>I</b> + <b>R</b></span> + <b>Q</b> + <b>M</b> + <b>U</b>) / <i>possible</i> − <b class="pen">P</b>)</p>
-    <p class="small muted">The highlighted group is the FAIR subtotal (max ${FAIR_MAX}). Q (ontology quality, max 20) applies to OWL/OBO/RDF ontologies; for schemas and other resources <i>possible</i> = 80 and the result is scaled to 100, otherwise <i>possible</i> = 100. The inactivity penalty P (0–30) grows with every year without activity.</p>
+    <p class="small muted">The highlighted group is the FAIR subtotal (max ${FAIR_MAX}). Q (ontology quality, max 20) applies to OWL/OBO/RDF ontologies; for schemas and other resources <i>possible</i> = 80 and the result is scaled to 100, otherwise <i>possible</i> = 100. P subtracts for inactivity (growing every year), logical inconsistency (−20, score capped at 54), unsatisfiable classes (−5), critical pitfalls (−3 each, up to −12) and ROBOT report errors (up to −10).</p>
     <dl class="formula-terms">
       ${RUBRIC.map((rb) => `<div${rb.fair ? ' class="is-fair"' : ""}><dt><b>${esc(rb.symbol)}</b> ${esc(rb.label)} <span class="rb-max">max ${rb.max}</span></dt><dd><code>${esc(rb.formula)}</code></dd></div>`).join("")}
-      <div class="is-penalty"><dt><b>P</b> ${esc(PENALTY.label)} <span class="rb-max">0 to −30</span></dt><dd><code>${esc(PENALTY.formula)}</code></dd></div>
+      <div class="is-penalty"><dt><b>P</b> ${esc(PENALTY.label)} <span class="rb-max">0 to −50</span></dt><dd><code>${esc(PENALTY.formula)}</code></dd></div>
     </dl>
     <div class="formula-fns">
       <p><code>[x]</code> is 1 if condition <i>x</i> holds, else 0.</p>
       <p><code>r(registries)</code>: ${tbl(T.registries, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>i(imports)</code>: ${tbl(T.imports, (s) => `≥ ${s.min}`)}</p>
-      <p><code>u</code>: imports ${UPPER_ONTOLOGIES.slice(0, 4).map((x) => x.toUpperCase()).join("/")} → 4, RO → 2 &nbsp;·&nbsp; <code>c</code>: consistent with 0 unsatisfiable → 6, with unsatisfiable → 2 &nbsp;·&nbsp; <code>q</code>: no ROBOT errors → 2, warnings/class ${T.warnDensity.slice(0, 2).map((t) => `≤ ${t.max} → ${t.pts}`).join(", ")} &nbsp;·&nbsp; <code>o</code>: no critical OOPS! pitfalls → 2, ≤ 2 important → 2</p>
+      <p><code>c</code> (logical consistency): consistent with 0 unsatisfiable classes → <b>10</b> · 1–5 unsatisfiable → 5 · more → 2 · inconsistent or unchecked → 0 &nbsp;·&nbsp; <code>u</code>: imports ${UPPER_ONTOLOGIES.slice(0, 4).map((x) => x.toUpperCase()).join("/")} → 3, RO → 1 &nbsp;·&nbsp; <code>q</code>: no ROBOT errors → 2, ≤ 0.05 warnings/class → 1, no critical pitfalls (OOPS!, else ROBOT) → 1</p>
       <p><code>recency</code>: ${tbl(T.recency, (s) => esc(s.label))} &nbsp;·&nbsp; <code>cadence</code>: ${tbl(T.cadence, (s) => `≥ ${s.min}`)}</p>
       <p><code>a(projects)</code>: ${tbl(T.adopters, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>reuse</code>: ${tbl(T.reuse, (s) => `≥ ${s.min}`)}</p>
       <p><code>stars</code>: ${tbl(T.stars, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>citations</code>: ${tbl(T.citations, (s) => `≥ ${s.min}`)}</p>
@@ -890,7 +890,7 @@ function evaluationPage() {
 
 <section class="wrap section">
   <h2>Criteria in plain words</h2>
-  <div class="rubric">${RUBRIC.map((r) => `<div class="rb${r.fair ? " rb-fair" : ""}"><div class="rb-head"><h3>${esc(r.symbol)} · ${esc(r.label)}</h3><span class="rb-max">${r.max} pts</span></div><p>${esc(r.how)}</p></div>`).join("")}<div class="rb rb-penalty"><div class="rb-head"><h3>P · ${esc(PENALTY.label)}</h3><span class="rb-max">0 to −30</span></div><p>${esc(PENALTY.how)}</p></div></div>
+  <div class="rubric">${RUBRIC.map((r) => `<div class="rb${r.fair ? " rb-fair" : ""}"><div class="rb-head"><h3>${esc(r.symbol)} · ${esc(r.label)}</h3><span class="rb-max">${r.max} pts</span></div><p>${esc(r.how)}</p></div>`).join("")}<div class="rb rb-penalty"><div class="rb-head"><h3>P · ${esc(PENALTY.label)}</h3><span class="rb-max">0 to −50</span></div><p>${esc(PENALTY.how)}</p></div></div>
   <div class="panel note">
     <h3>Which version is evaluated?</h3>
     <p class="small">Each run records the exact version it looked at, in this order of preference: the <code>owl:versionIRI</code> or <code>owl:versionInfo</code> declared inside the artefact (or <code>data-version</code> / <code>version</code> for OBO, YAML and JSON files); the version reported by OLS; the latest GitHub release; a git tag on the evaluated commit; and otherwise the exact commit of the default branch. The artefact's ETag is stored too. Every entry page shows this under “Version evaluated”, and each run's snapshot keeps it permanently.</p>

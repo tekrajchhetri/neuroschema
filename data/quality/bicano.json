@@ -1,0 +1,15 @@
+{
+  "id": "bicano",
+  "artefact": "https://purl.brain-bican.org/ontology/bicano.owl",
+  "checkedAt": "2026-10-25T19:20:21.927Z",
+  "sha256": "9a4c4385d21c4fdc510fb71980cfa8e411997103e9775a35e77ef70eb491c524",
+  "oops": {
+    "error": "no pitfall scanner succeeded",
+    "attempts": [
+      "local OOPS!: Command failed: docker run --rm -v /var/folders/qc/ymnxqz0x7g70whhm9jqspd8r0000gn/T/neuroschema-quality/bicano:/work neuroschema/oops --input-file /work/ontology.owl\nPicked up JAVA_TOOL_OPTIONS: -Xmx4",
+      "Python scan: Command failed: python3 /Users/tekrajchhetri/Documents/neuroschema.org/scripts/pitfalls.py scan /var/folders/qc/ymnxqz0x7g70whhm9jqspd8r0000gn/T/neuroschema-quality/bicano/ontology.owl\nfile:///var/fol"
+    ],
+    "checkedAt": "2026-10-25T19:20:23.261Z",
+    "sha256": "9a4c4385d21c4fdc510fb71980cfa8e411997103e9775a35e77ef70eb491c524"
+  }
+}
