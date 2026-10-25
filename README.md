@@ -50,7 +50,7 @@ Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scri
 
 **Versions and provenance.** Each run records the exact version evaluated: the version IRI/info in the artefact, or else the OLS version, release tag or commit. Every fact stores its source URL and retrieval time. Runs are archived, unchanged, in `data/runs/`, which feeds the per-entry history. Failed lookups carry forward the last good value, flagged.
 
-> **Generated data has a single writer.** `data/evaluation.json`, `data/runs/` and `data/quality/` are written only by the **Evaluate catalog** Action, so they never conflict. Local `npm run evaluate` / `rescore` / quality runs go to `.local/data/` (git-ignored), and `npm run dev` previews them. Run `npm run setup` once per clone: it enables a pre-commit hook that blocks committing generated data, and makes `git pull` rebase. To publish new scores, push code or catalog changes (the Action runs automatically) or start the Action manually.
+> **Evaluation runs locally.** Run `npm run refresh` (or `scripts/refresh.sh --push`) to update scores: it pulls, runs the OOPS!/ROBOT quality checks in Docker, evaluates, rebuilds and commits `data/evaluation.json`, `data/runs/` and `data/quality/`. Your local run is the only writer of those files, so they never conflict. GitHub Actions only handle submissions and their checks. Set `GITHUB_TOKEN` (or log in with `gh`) first.
 
 ## Layout
 

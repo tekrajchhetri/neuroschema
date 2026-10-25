@@ -53,7 +53,7 @@ if (online) {
       if (!e[k]) continue;
       const code = await head(e[k]);
       if (k === "download" && code >= 200 && code < 400) {
-        const r = await fetch(e[k], { redirect: "follow", headers: { Range: "bytes=0-2047", "User-Agent": "neuroschema-validator/1.0" } }).catch(() => null);
+        const r = await fetch(e[k], { redirect: "follow", headers: { Range: "bytes=0-2047", Accept: "text/turtle, application/rdf+xml;q=0.9, application/ld+json;q=0.8, */*;q=0.1", "User-Agent": "neuroschema-validator/1.0" } }).catch(() => null);
         const t = r ? (await r.text()).trimStart().toLowerCase() : "";
         if (t.startsWith("<!doctype html") || t.startsWith("<html")) {
           checks.push({ id: e.id, what: "download is the artefact", ok: false, detail: `${e[k]} → HTML page (${r.url})` });
@@ -86,7 +86,8 @@ if (online) {
   }
 }
 
-for (const w of warnings) console.warn(`⚠ ${w}`);
+if (args.includes("--verbose") || warnings.length <= 10) for (const w of warnings) console.warn(`⚠ ${w}`);
+else if (warnings.length) console.warn(`⚠ ${warnings.length} possible near-duplicates (run with --verbose to list them)`);
 for (const p of errors) console.error(`✗ ${p}`);
 console.log(errors.length ? `\n${errors.length} problem(s) found.` : `✓ ${catalog.length} entries valid${online ? ` (online checks on ${targets.length})` : ""}.`);
 

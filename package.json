@@ -9,11 +9,14 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && PORT=3200 node scripts/serve.mjs",
+    "serve": "PORT=3200 node scripts/serve.mjs",
     "validate": "node scripts/validate.mjs",
     "validate:online": "node scripts/validate.mjs --online",
+    "quality": "node scripts/quality.mjs",
     "evaluate": "node scripts/evaluate.mjs",
     "rescore": "node scripts/rescore.mjs",
-    "dev": "git config core.hooksPath .githooks; node scripts/build.mjs && node scripts/serve.mjs",
-    "setup": "git config core.hooksPath .githooks && git config pull.rebase true && echo 'Git hooks enabled; pull uses rebase.'"
+    "images": "docker build -q -t neuroschema/oops docker/oops && docker build -q -t neuroschema/robot docker/robot",
+    "refresh": "scripts/refresh.sh"
   }
 }

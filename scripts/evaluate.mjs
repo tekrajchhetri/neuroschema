@@ -32,6 +32,7 @@ const only = process.env.ONLY ? new Set(process.env.ONLY.split(",").filter(Boole
 const readEval = async (f) => (existsSync(f) ? JSON.parse(await readFile(f, "utf8")) : null);
 const previous = [await readEval(outFile), await readEval(trackedFile)].filter(Boolean).sort((a, b) => String(b.generatedAt).localeCompare(String(a.generatedAt)))[0] || { entries: {} };
 
+const RDF_ACCEPT = "text/turtle, application/rdf+xml;q=0.9, application/ld+json;q=0.8, application/owl+xml;q=0.8, text/plain;q=0.5, */*;q=0.1";
 const UA = "Mozilla/5.0 (compatible; neuroschema-evaluator/1.1; +https://neuroschema.org/evaluation/)";
 const GH = process.env.GITHUB_TOKEN;
 const BP = process.env.BIOPORTAL_API_KEY;
@@ -272,7 +273,7 @@ async function sniffArtifact(url) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
   try {
-    const res = await fetch(url, { headers: { "User-Agent": UA, Range: `bytes=0-${SNIFF_BYTES - 1}` }, redirect: "follow", signal: ctrl.signal });
+    const res = await fetch(url, { headers: { "User-Agent": UA, Accept: RDF_ACCEPT, Range: `bytes=0-${SNIFF_BYTES - 1}` }, redirect: "follow", signal: ctrl.signal });
     if (!res.ok) return { source: url, error: `HTTP ${res.status}`, fetchedAt: now() };
     const reader = res.body.getReader();
     let buf = "", got = 0;

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Ontology quality checks, run in CI (needs Java + ROBOT): writes data/quality/<id>.json.
+// Ontology quality checks, run locally by the maintainer: writes data/quality/<id>.json.
+// ROBOT runs from ROBOT_JAR (needs Java) or from a Docker image (ROBOT_IMAGE, built from docker/robot).
 //   - ROBOT reason (ELK): logical consistency and unsatisfiable classes
 //   - ROBOT report: errors / warnings / info
 //   - OOPS! (OntOlogy Pitfall Scanner) REST service: critical / important / minor pitfalls
@@ -24,7 +25,15 @@ const catalog = JSON.parse(await readFile(path.join(root, "data/catalog.json"), 
 const outDir = path.join(outData, "quality");
 const trackedDir = path.join(trackedData, "quality");
 const work = path.join(os.tmpdir(), "neuroschema-quality");
-const ROBOT = process.env.ROBOT_JAR;
+const ROBOT_JAR = process.env.ROBOT_JAR || null;
+const ROBOT_IMAGE = process.env.ROBOT_IMAGE || null;
+const ROBOT = ROBOT_JAR || ROBOT_IMAGE;
+// Run a ROBOT command; host paths under `work` are mapped to /work inside the container.
+function robot(args, opts = {}) {
+  if (ROBOT_JAR) return run("java", ["-Xmx6G", "-jar", ROBOT_JAR, ...args], opts);
+  const mapped = args.map((a) => (typeof a === "string" && a.startsWith(work) ? "/work" + a.slice(work.length) : a));
+  return run("docker", ["run", "--rm", "-v", `${work}:/work`, ROBOT_IMAGE, ...mapped], opts);
+}
 const MAX_MB = Number(process.env.MAX_MB || 150);
 const only = process.env.ONLY ? new Set(process.env.ONLY.split(",")) : null;
 await mkdir(outDir, { recursive: true });
@@ -33,10 +42,10 @@ await mkdir(work, { recursive: true });
 const dash = await fetch("https://dashboard.obofoundry.org/dashboard/dashboard-results.json").then((r) => r.json()).catch(() => ({ ontologies: [] }));
 const onDashboard = new Set((dash.ontologies || []).map((o) => o.namespace));
 
-const robotVersion = ROBOT ? (await run("java", ["-jar", ROBOT, "--version"]).catch(() => ({ stdout: "" }))).stdout.trim() : null;
+const robotVersion = ROBOT ? (await robot(["--version"]).catch(() => ({ stdout: "" }))).stdout.trim() || null : null;
 
 async function download(url, file) {
-  const res = await fetch(url, { redirect: "follow", headers: { "User-Agent": "neuroschema-quality/1.0 (+https://neuroschema.org)" } });
+  const res = await fetch(url, { redirect: "follow", headers: { "User-Agent": "neuroschema-quality/1.0 (+https://neuroschema.org)", Accept: "text/turtle, application/rdf+xml;q=0.9, application/owl+xml;q=0.8, application/ld+json;q=0.7, */*;q=0.1" } });
   if (!res.ok) throw new Error(`download HTTP ${res.status}`);
   const len = Number(res.headers.get("content-length") || 0);
   if (len > MAX_MB * 1e6) throw new Error(`file is ${(len / 1e6).toFixed(0)} MB (limit ${MAX_MB} MB)`);
@@ -49,10 +58,9 @@ async function download(url, file) {
 }
 
 async function robotChecks(file) {
-  const java = ["-Xmx6G", "-jar", ROBOT];
   const result = { reasoner: "ELK", robotVersion };
   // reason: exits non-zero if inconsistent or (by default) if there are unsatisfiable classes.
-  const r = await run("java", [...java, "reason", "--input", file, "--reasoner", "ELK", "--equivalent-classes-allowed", "all", "--dump-unsatisfiable", path.join(work, "unsat.ofn")], { maxBuffer: 1 << 26, timeout: 20 * 60e3 }).then(
+  const r = await robot(["reason", "--input", file, "--reasoner", "ELK", "--equivalent-classes-allowed", "all", "--dump-unsatisfiable", path.join(work, "unsat.ofn")], { maxBuffer: 1 << 26, timeout: 30 * 60e3 }).then(
     () => ({ ok: true, out: "" }),
     (e) => ({ ok: false, out: `${e.stdout || ""}${e.stderr || ""}` })
   );
@@ -63,11 +71,11 @@ async function robotChecks(file) {
     Object.assign(result, { consistent: true, unsatisfiable: n ?? 1 });
   } else Object.assign(result, { consistent: null, reasonError: r.out.slice(-400) });
 
-  const prof = await run("java", [...java, "validate-profile", "--input", file, "--profile", "DL", "--output", path.join(work, "profile.txt")], { maxBuffer: 1 << 26, timeout: 20 * 60e3 }).then(() => true, () => false);
+  const prof = await robot(["validate-profile", "--input", file, "--profile", "DL", "--output", path.join(work, "profile.txt")], { maxBuffer: 1 << 26, timeout: 30 * 60e3 }).then(() => true, () => false);
   result.owl2dl = prof;
 
   const rep = path.join(work, "report.tsv");
-  await run("java", [...java, "report", "--input", file, "--fail-on", "none", "--output", rep], { maxBuffer: 1 << 26, timeout: 20 * 60e3 }).catch(() => {});
+  await robot(["report", "--input", file, "--fail-on", "none", "--output", rep], { maxBuffer: 1 << 26, timeout: 30 * 60e3 }).catch(() => {});
   if (existsSync(rep)) {
     const rows = (await readFile(rep, "utf8")).split("\n").slice(1).filter(Boolean);
     const count = (lvl) => rows.filter((l) => l.startsWith(lvl)).length;
@@ -101,7 +109,17 @@ async function oops(url) {
 //   2. the public OOPS! web service
 //   3. NeuroSchema's Python scan of the OOPS! pitfalls that are purely structural (scripts/pitfalls.py)
 const OOPS_IMAGE = process.env.OOPS_IMAGE || null;
-const PY = process.env.PYTHON || "python3";
+// Use the first Python that has rdflib (PYTHON env var wins); see requirements.txt.
+const PY = await (async () => {
+  for (const py of [process.env.PYTHON, "python3", "/opt/homebrew/bin/python3", "/opt/anaconda3/bin/python3", "/usr/local/bin/python3", "python"].filter(Boolean)) {
+    try {
+      await run(py, ["-c", "import rdflib"]);
+      return py;
+    } catch {}
+  }
+  console.warn("! No Python with rdflib found (pip install -r requirements.txt); OOPS! reports can't be parsed and the Python scan is unavailable.");
+  return "python3";
+})();
 const PY_MAX_MB = Number(process.env.PY_MAX_MB || 80);
 const pyJson = async (args) => JSON.parse((await run(PY, [path.join(root, "scripts/pitfalls.py"), ...args], { maxBuffer: 1 << 26, timeout: 30 * 60e3 })).stdout);
 

@@ -5,7 +5,7 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
 const dist = path.resolve("dist");
-const port = Number(process.env.PORT || 4321);
+const port = Number(process.env.PORT || 3200);
 const types = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".jsonld": "application/ld+json", ".svg": "image/svg+xml", ".xml": "application/xml", ".txt": "text/plain" };
 
 createServer(async (req, res) => {
