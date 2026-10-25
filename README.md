@@ -48,6 +48,8 @@ Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scri
 
 **Versions and provenance.** Each run records the exact version evaluated: the version IRI/info in the artefact, or else the OLS version, release tag or commit. Every fact stores its source URL and retrieval time. Runs are archived, unchanged, in `data/runs/`, which feeds the per-entry history. Failed lookups carry forward the last good value, flagged.
 
+> `data/evaluation.json`, `data/runs/` and `data/quality/` are written by the **Evaluate catalog** Action. Avoid committing a local `npm run evaluate` run. If you do, and a merge conflict appears in `data/evaluation.json`, keep whichever side is newer (check `generatedAt`) and keep every file in `data/runs/`.
+
 ## Layout
 
 | Path | What |

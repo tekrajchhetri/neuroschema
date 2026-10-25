@@ -48,4 +48,10 @@ jobs:
           git config user.name "neuroschema-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Evaluation run $(date -u +%Y-%m-%dT%H:%MZ)"
-          git push
+          # main may have moved while we evaluated. Rebase onto it; for the generated files
+          # (evaluation.json, quality/) this run's fresh results win. Retry a few times.
+          for i in 1 2 3; do
+            git pull --rebase -X theirs origin main && git push && exit 0
+            sleep $((i * 10))
+          done
+          exit 1
