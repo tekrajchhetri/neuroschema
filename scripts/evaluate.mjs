@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { RUBRIC_VERSION, scoreEntry } from "./rubric.mjs";
 
-export const EVALUATOR_VERSION = "1.2.0";
+export const EVALUATOR_VERSION = "2.0.0";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const catalog = JSON.parse(await readFile(path.join(root, "data/catalog.json"), "utf8"));
@@ -103,23 +103,77 @@ async function github(slug) {
   return { ...out, source, fetchedAt: now() };
 }
 
-async function ols(id) {
-  const source = `https://www.ebi.ac.uk/ols4/api/ontologies/${id}`;
-  const r = await get(source, { json: true });
+// OLS (EMBL-EBI). The v2 API has everything the OLS ontology page shows: counts, imports/exports,
+// ontology & version IRI, languages, source file timestamp. Falls back to v1.
+async function olsLike(base, portal, id) {
+  const v2 = `${base}/api/v2/ontologies/${id}`;
+  const r2 = await get(v2, { json: true });
+  if (r2.ok && r2.body?.ontologyId) {
+    const d = r2.body;
+    const num = (x) => (x == null || x === "" ? null : Number(x));
+    const versionIri = d["http://www.w3.org/2002/07/owl#versionIRI"] || null;
+    const versionInfo = [].concat(d["http://www.w3.org/2002/07/owl#versionInfo"] || [])[0] || null;
+    const releaseDate = String(versionIri || "").match(/(\d{4}-\d{2}-\d{2})/)?.[1] || null;
+    return {
+      portal, id, api: "v2",
+      title: d.title || null,
+      iri: d.iri || null,
+      versionIri: typeof versionIri === "string" ? versionIri : versionIri?.value || null,
+      version: (typeof versionInfo === "string" ? versionInfo : versionInfo?.value) || releaseDate,
+      releaseDate,
+      terms: num(d.numberOfClasses),
+      properties: num(d.numberOfProperties),
+      individuals: num(d.numberOfIndividuals),
+      importsFrom: d.importsFrom || [],
+      exportsTo: d.exportsTo || [],
+      languages: d.language || [],
+      loaded: d.loaded || null,
+      sourceFileTimestamp: d.sourceFileTimestamp || null,
+      obsolete: d.isObsolete === true || d.isObsolete === "true",
+      status: "LOADED",
+      page: `${base}/ontologies/${id}`,
+      source: v2,
+      fetchedAt: now(),
+    };
+  }
+  const v1 = `${base}/api/ontologies/${id}`;
+  const r = await get(v1, { json: true });
   // OLS answers unknown ids with HTTP 200 and {"status": 404} in the body.
-  if (!r.ok || typeof r.body?.status === "number") return { id, source, error: `not found in OLS (${r.body?.status ?? r.code})`, fetchedAt: now() };
+  if (!r.ok || typeof r.body?.status === "number") return { portal, id, source: v1, error: `not found (${r.body?.status ?? r.code})`, fetchedAt: now() };
   const d = r.body;
   const versionIri = d.config?.versionIri || null;
   const releaseDate = versionIri?.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || null;
   return {
-    id,
-    status: d.status,
-    terms: d.numberOfTerms,
-    properties: d.numberOfProperties,
-    version: d.config?.version || releaseDate,
-    versionIri,
-    releaseDate,
-    loaded: d.loaded,
+    portal, id, api: "v1",
+    title: d.config?.title || null,
+    iri: d.config?.id && /^https?:/.test(d.config.id) ? d.config.id : null,
+    versionIri, version: d.config?.version || releaseDate, releaseDate,
+    terms: d.numberOfTerms ?? null, properties: d.numberOfProperties ?? null, individuals: d.numberOfIndividuals ?? null,
+    importsFrom: [], exportsTo: [], languages: d.languages || [],
+    loaded: d.loaded || null, status: d.status,
+    page: `${base.replace(/\/api$/, "")}/ontologies/${id}`,
+    source: v1, fetchedAt: now(),
+  };
+}
+const ols = (id) => olsLike("https://www.ebi.ac.uk/ols4", "OLS (EMBL-EBI)", id);
+const tib = (id) => olsLike("https://service.tib.eu/ts4tib", "TIB Terminology Service", id);
+
+// Bioregistry: cross-registry mappings (OLS, BioPortal, TIB, FAIRsharing, Wikidata…) and reuse links.
+async function bioregistry(prefix) {
+  const source = `https://bioregistry.io/api/registry/${encodeURIComponent(prefix)}`;
+  const r = await get(source, { json: true });
+  if (!r.ok || !r.body?.prefix) return { prefix, source, error: `HTTP ${r.code}`, fetchedAt: now() };
+  const d = r.body;
+  return {
+    prefix: d.prefix,
+    name: d.name || null,
+    mappings: d.mappings || {},
+    dependsOn: d.depends_on || [],
+    appearsIn: d.appears_in || [],
+    license: d.license || null,
+    version: d.version || null,
+    deprecated: !!d.deprecated,
+    page: `https://bioregistry.io/${d.prefix}`,
     source,
     fetchedAt: now(),
   };
@@ -150,10 +204,22 @@ async function obo(id) {
 
 async function bioportal(acronym) {
   if (!BP) return null;
-  const source = `https://data.bioontology.org/ontologies/${acronym}/latest_submission`;
-  const r = await get(`${source}?apikey=${BP}`, { json: true });
-  if (!r.ok) return { acronym, source, error: `HTTP ${r.code}`, fetchedAt: now() };
-  return { acronym, version: r.body.version || null, released: r.body.released || null, source, fetchedAt: now() };
+  const base = `https://data.bioontology.org/ontologies/${acronym}`;
+  const [sub, met] = await Promise.all([get(`${base}/latest_submission?apikey=${BP}`, { json: true }), get(`${base}/metrics?apikey=${BP}`, { json: true })]);
+  if (!sub.ok) return { portal: "BioPortal", acronym, source: `${base}/latest_submission`, error: `HTTP ${sub.code}`, fetchedAt: now() };
+  return {
+    portal: "BioPortal",
+    acronym,
+    version: sub.body.version || null,
+    released: sub.body.released || null,
+    terms: met.ok ? met.body.classes ?? null : null,
+    properties: met.ok ? met.body.properties ?? null : null,
+    individuals: met.ok ? met.body.individuals ?? null : null,
+    maxDepth: met.ok ? met.body.maxDepth ?? null : null,
+    page: `https://bioportal.bioontology.org/ontologies/${acronym}`,
+    source: `${base}/latest_submission`,
+    fetchedAt: now(),
+  };
 }
 
 async function citations(doi) {
@@ -187,7 +253,8 @@ async function gitHead(slug) {
     const latest = releaseLike.at(-1);
     const latestTag = latest ? { name: latest, commit: tags.get(latest), url: `https://github.com/${slug}/releases/tag/${latest}` } : null;
     const headTag = [...tags].find(([, sha]) => sha === commit)?.[0] || null;
-    return { commit, ref, headTag, latestTag, tagCount: tags.size, url: `https://github.com/${slug}/tree/${commit}`, source, fetchedAt: now() };
+    const tagDates = [...new Set([...tags.keys()].map((t) => t.match(/(\d{4})-(\d{2})-(\d{2})/)).filter(Boolean).map((m) => `${m[1]}-${m[2]}-${m[3]}`))].sort();
+    return { commit, ref, headTag, latestTag, tagCount: tags.size, tagDates, url: `https://github.com/${slug}/tree/${commit}`, source, fetchedAt: now() };
   } catch (e) {
     return { source, error: e.message, fetchedAt: now() };
   } finally {
@@ -232,6 +299,62 @@ async function sniffArtifact(url) {
   }
 }
 
+// OBO Dashboard: OBO principle checks, ROBOT report, reasoner consistency, reuse.
+const DASH_SOURCE = "https://dashboard.obofoundry.org/dashboard/dashboard-results.json";
+let dashData;
+async function dashboard(ns) {
+  dashData ??= get(DASH_SOURCE, { json: true, timeout: 90000 }).then((r) => ({
+    ok: r.ok,
+    fetchedAt: now(),
+    byNs: Object.fromEntries(((r.body && r.body.ontologies) || []).map((o) => [o.namespace, o])),
+  }));
+  const d = await dashData;
+  if (!d.ok) return { ns, source: DASH_SOURCE, error: "dashboard unavailable", fetchedAt: d.fetchedAt };
+  const o = d.byNs[ns];
+  if (!o) return null;
+  const m = o.metrics || {};
+  return {
+    ns,
+    checks: Object.fromEntries(Object.entries(o.results || {}).map(([k, v]) => [k, v.status])),
+    robot: o.results?.["ROBOT Report"]?.results || null,
+    consistent: m["Info: Logical consistency"] ?? null,
+    unsatisfiable: m["Entities: Number of unsatisfiable classes"] ?? null,
+    classes: m["Entities: Number of classes"] ?? null,
+    axioms: m["Axioms: Number of axioms"] ?? null,
+    owl2dl: m["Info: Does the ontology fall under OWL 2 DL?"] ?? null,
+    reusedPct: m["Entities: % of entities reused"] ?? null,
+    usedBy: m["Info: Which ontologies use it?"] || [],
+    oboScore: m["Info: Experimental OBO score"]?.oboscore ?? null,
+    summary: o.summary?.status || null,
+    checkedVersion: o.version || null,
+    checkedAt: o.date ? new Date(o.date.replace(" ", "T") + "Z").toISOString() : null,
+    page: `https://dashboard.obofoundry.org/dashboard/${ns}/dashboard.html`,
+    source: DASH_SOURCE,
+    fetchedAt: d.fetchedAt,
+  };
+}
+
+// Quality checks produced by the CI job (scripts/quality.mjs): ROBOT reason/report and OOPS!.
+async function qualityFile(id) {
+  const f = path.join(root, "data/quality", `${id}.json`);
+  if (!existsSync(f)) return { quality: null, oops: null };
+  const q = JSON.parse(await readFile(f, "utf8"));
+  return { quality: q.robot ? { ...q.robot, source: `data/quality/${id}.json` } : null, oops: q.oops ? { ...q.oops, source: `data/quality/${id}.json` } : null };
+}
+
+// Release dates in the last 12 months: GitHub releases (with a token), else date-named git tags.
+async function releaseDates(slug, git) {
+  if (slug && GH) {
+    const r = await get(`https://api.github.com/repos/${slug}/releases?per_page=100`, { json: true, headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${GH}` } });
+    if (r.ok && Array.isArray(r.body) && r.body.length) {
+      const dates = r.body.filter((x) => !x.draft && !x.prerelease && x.published_at).map((x) => x.published_at).sort();
+      return { dates, from: "GitHub releases" };
+    }
+  }
+  if (git?.tagDates?.length) return { dates: git.tagDates, from: "dated git tags" };
+  return { dates: [], from: null };
+}
+
 // A failed lookup keeps the last good value (with its original fetchedAt) and says why.
 function carry(fresh, old) {
   if (!fresh?.error) return fresh;
@@ -241,18 +364,33 @@ function carry(fresh, old) {
 
 async function evaluate(e) {
   const slug = ghRepo(e.repository);
+  // Bioregistry first: its mappings tell us the resource's id in other portals.
+  const brPrefix = e.bioregistry || e.obo || e.ols || null;
+  const br = brPrefix ? await once(`br:${brPrefix}`, () => bioregistry(brPrefix)) : null;
+  const map = br && !br.error ? br.mappings : {};
+  const olsId = e.ols || map.ols || null;
+  const tibId = map["tib.ts"] || null;
+  const bpId = e.bioportal || map.bioportal || null;
   const [homepage, repoLink, download, gh, olsInfo, oboInfo, bp, cites, git, artifact] = await Promise.all([
     checkLink(e.homepage),
     e.repository && e.repository !== e.homepage ? checkLink(e.repository) : null,
     checkLink(e.download),
     slug ? once(`gh:${slug}`, () => github(slug)) : null,
-    e.ols ? once(`ols:${e.ols}`, () => ols(e.ols)) : null,
+    olsId ? once(`ols:${olsId}`, () => ols(olsId)) : null,
     e.obo ? obo(e.obo) : null,
-    e.bioportal ? bioportal(e.bioportal) : null,
+    bpId ? once(`bp:${bpId}`, () => bioportal(bpId)) : null,
     Promise.all((e.publications || []).map((p) => once(`doi:${p.doi}`, () => citations(p.doi)))),
     slug ? once(`git:${slug}`, () => gitHead(slug)) : null,
     e.download ? once(`art:${e.download}`, () => sniffArtifact(e.download)) : null,
   ]);
+  const tibInfo = tibId ? await once(`tib:${tibId}`, () => tib(tibId)) : null;
+  const dashNs = e.obo || (map.obofoundry ? String(map.obofoundry).toLowerCase() : null);
+  const dash = dashNs ? await dashboard(dashNs) : null;
+  const { quality, oops } = await qualityFile(e.id);
+  const rel = await once(`rel:${slug || e.id}`, () => releaseDates(slug, git && !git.error ? git : null));
+  const yearAgo = Date.now() - 365 * 864e5;
+  const relDates = [...new Set([...(rel.dates || []).map((d) => d.slice(0, 10)), olsInfo?.releaseDate].filter(Boolean))].sort();
+  const releases = { dates: relDates.slice(-24), lastYear: relDates.filter((d) => Date.parse(d) >= yearAgo).length, from: rel.from || (olsInfo?.releaseDate ? "OLS version IRI" : null) };
   const repository = e.repository && e.repository === e.homepage ? homepage : repoLink;
   const prev = previous.entries[e.id] || {};
   const facts = {
@@ -263,6 +401,12 @@ async function evaluate(e) {
     bioportal: carry(bp, prev.bioportal),
     citations: cites.map((c) => (c.count == null ? carry(c, prev.citations?.find((p) => p.doi === c.doi)) : c)),
     git: carry(git, prev.git),
+    tib: carry(tibInfo, prev.tib),
+    dashboard: carry(dash, prev.dashboard),
+    quality,
+    oops,
+    releases,
+    bioregistry: carry(br, prev.bioregistry),
     artifact: carry(artifact, prev.artifact),
   };
   return { ...facts, ...scoreEntry(e, facts), evaluatedAt: now(), runId };
@@ -301,7 +445,7 @@ const run = {
   ...(process.env.GITHUB_SHA ? { commit: process.env.GITHUB_SHA } : {}),
   ...(process.env.GITHUB_RUN_ID ? { ciRun: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}` } : {}),
   authenticated: { github: Boolean(GH), bioportal: Boolean(BP) },
-  sources: ["HTTP link checks", "https://api.github.com", "https://www.ebi.ac.uk/ols4/api", OBO_SOURCE, "https://api.crossref.org", ...(BP ? ["https://data.bioontology.org"] : [])],
+  sources: ["HTTP link checks", "git smart-HTTP refs", DASH_SOURCE, "https://api.github.com", "https://www.ebi.ac.uk/ols4/api/v2", "https://service.tib.eu/ts4tib/api", "https://bioregistry.io/api", OBO_SOURCE, "https://api.crossref.org", ...(BP ? ["https://data.bioontology.org"] : [])],
 };
 const fresh = Object.fromEntries(results);
 

@@ -4,7 +4,7 @@ import { readFile, writeFile, mkdir, rm, cp, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { RUBRIC, PENALTY, GRADES, RUBRIC_VERSION, FAIR_MAX, MAINTENANCE_STEPS, MAINTENANCE_CAP, ADOPTER_STEPS, STAR_STEPS, CITATION_STEPS, adopters } from "./rubric.mjs";
+import { RUBRIC, PENALTY, GRADES, RUBRIC_VERSION, FAIR_MAX, T, UPPER_ONTOLOGIES, adopters, imports as importsOf, reusedBy } from "./rubric.mjs";
 import { validateCatalog, KINDS } from "./validate-lib.mjs";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -152,7 +152,7 @@ const baseGraph = () => [
     description: config.description,
     publisher: { "@id": ORG_ID },
     inLanguage: "en",
-    potentialAction: { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: `${config.url}/?q={search_term_string}#explore` }, "query-input": "required name=search_term_string" },
+    potentialAction: { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: `${config.url}/search/?q={search_term_string}` }, "query-input": "required name=search_term_string" },
   },
 ];
 const breadcrumbs = (trail) => ({ "@type": "BreadcrumbList", itemListElement: trail.map(([name, p], i) => ({ "@type": "ListItem", position: i + 1, name, item: abs(p) })) });
@@ -246,7 +246,7 @@ function page({ title, description, pathname, body, graph = [], noindex = false,
   <div class="wrap header-inner">
     <a class="brand" href="/" aria-label="NeuroSchema home">${logo()}</a>
     <nav class="nav" aria-label="Main">
-      <a href="/#explore" class="nav-explore">Explore</a>
+      ${nav("/catalog/", "Catalog")}
       ${nav("/categories/", "Categories")}
       ${nav("/evaluation/", "Evaluation")}
       ${nav("/submit/", "Submit")}
@@ -353,22 +353,37 @@ const scored = catalog.map((e) => ev(e.id)).filter(Boolean);
 const avgScore = scored.length ? Math.round(scored.reduce((s, r) => s + r.score, 0) / scored.length) : null;
 const totalAdopters = scored.reduce((s, r) => s + (r.adopterCount || 0), 0);
 
+const searchForm = (id, value = "", cls = "search") => `<form class="${cls}" role="search" action="/search/" method="get">
+      <label class="sr" for="${id}">Search the catalog</label>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="${id}" name="q" type="search" value="${attr(value)}" placeholder="Search e.g. “mouse brain regions”, “EEG events”, “LinkML”…" autocomplete="off" data-search>
+      <kbd>/</kbd>
+    </form>`;
+
+const catalogLd = (list) => ({
+  "@type": "DataCatalog",
+  "@id": CATALOG_ID,
+  name: "NeuroSchema catalog of neuroscience ontologies and schemas",
+  description: config.description,
+  url: abs("/catalog/"),
+  publisher: { "@id": ORG_ID },
+  keywords: ["neuroscience", "ontology", "schema", "metadata", "data standard", "FAIR"],
+  ...(evaluation.generatedAt ? { dateModified: evaluation.generatedAt } : {}),
+  dataset: list.map((e) => ({ "@type": "Dataset", "@id": abs(`/o/${e.id}/`) + "#dataset", name: e.name, url: abs(`/o/${e.id}/`) })),
+});
+
 function homePage() {
-  const options = (list, label = (x) => x) => list.map((x) => `<option value="${attr(x)}">${esc(label(x))}</option>`).join("");
   const sorted = [...catalog].sort(byScore);
+  const top = sorted.slice(0, 6);
+  const recent = [...catalog].filter((e) => ev(e.id)?.lastActivity && !top.includes(e)).sort((a, b) => ev(b.id).lastActivity.localeCompare(ev(a.id).lastActivity)).slice(0, 6);
   const body = `
 <section class="hero">
   ${heroArt()}
   <div class="wrap hero-inner">
     <p class="eyebrow">Neuroscience ontologies, schemas &amp; standards</p>
     <h1>The map of <em>neuroscience</em> ontologies &amp; schemas.</h1>
-    <p class="lede">${esc(config.description)} Every entry is scored against the FAIR principles, maintenance and community adoption, with the exact version evaluated and full provenance.</p>
-    <form class="search" role="search" action="/" method="get" onsubmit="return false">
-      <label class="sr" for="q">Search the catalog</label>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" name="q" type="search" placeholder="Search e.g. “mouse brain regions”, “EEG events”, “LinkML”…" autocomplete="off">
-      <kbd>/</kbd>
-    </form>
+    <p class="lede">${esc(config.description)} Every entry is scored against the FAIR principles, ontology quality, maintenance and community adoption, with the exact version evaluated and full provenance.</p>
+    ${searchForm("hero-q")}
     <dl class="stats">
       <div><dt>Resources</dt><dd>${catalog.length}</dd></div>
       <div><dt>Categories</dt><dd>${categories.length}</dd></div>
@@ -383,9 +398,46 @@ function homePage() {
   <div class="cat-grid">${categories.map(categoryTile).join("")}</div>
 </section>
 
+<section class="wrap section">
+  <div class="section-head"><h2>Highest rated</h2><a href="/catalog/?sort=score">See all ${catalog.length} →</a></div>
+  <div class="cards">${top.map(card).join("")}</div>
+</section>
+
+<section class="wrap section">
+  <div class="section-head"><h2>Recently updated</h2><a href="/catalog/?sort=activity">See all →</a></div>
+  <div class="cards">${recent.map(card).join("")}</div>
+</section>
+
+<section class="wrap section browse-all"><a class="btn" href="/catalog/">Browse the full catalog</a> <a class="btn-ghost" href="/evaluation/">How we score</a></section>
+
+<section class="wrap section cta">
+  <div class="cta-inner">
+    <div><h2>Missing a schema or ontology?</h2><p class="muted">Submit it through GitHub. Every addition is reviewed, validated and evaluated automatically before it is merged.</p></div>
+    <a class="btn" href="/submit/">Submit a resource</a>
+  </div>
+</section>`;
+  return page({
+    title: null,
+    pathname: "/",
+    body,
+    description: `${config.description} ${catalog.length} resources across ${categories.length} domains, scored on FAIR principles, ontology quality and maintenance, tracked over time.`,
+    graph: [webPage("WebPage", "/", `NeuroSchema — ${config.tagline}`, config.description, { about: { "@id": CATALOG_ID }, primaryImageOfPage: abs("/assets/og-image.png") }), catalogLd(sorted)],
+  });
+}
+
+function catalogPage() {
+  const options = (list, label = (x) => x) => list.map((x) => `<option value="${attr(x)}">${esc(label(x))}</option>`).join("");
+  const sorted = [...catalog].sort(byScore);
+  const trail = [["Home", "/"], ["Catalog", "/catalog/"]];
+  const body = `
+<section class="page-head wrap">
+  ${crumbsHtml(trail)}
+  <h1>The catalog</h1>
+  <p class="lede">All ${catalog.length} resources. Filter by domain, type, species or grade, and sort by score, FAIRness, activity or adoption.</p>
+</section>
 <section class="wrap section" id="explore">
-  <div class="section-head"><h2>Explore the catalog</h2><span class="muted" id="count" aria-live="polite">${catalog.length} resources</span></div>
   <div class="filters" role="group" aria-label="Filters">
+    <label class="grow">Filter<input id="q" type="search" placeholder="Filter by name, tag, format…" autocomplete="off"></label>
     <label>Category<select id="f-cat"><option value="">All</option>${options(categories.map((c) => c.id), (id) => catById[id].name)}</select></label>
     <label>Type<select id="f-kind"><option value="">All</option>${options(allKinds, (k) => KIND_LABEL[k] || k)}</select></label>
     <label>Species<select id="f-species"><option value="">All</option>${options(allSpecies)}</select></label>
@@ -400,36 +452,28 @@ function homePage() {
     <label class="check"><input type="checkbox" id="f-active"> Hide legacy</label>
     <button type="button" class="btn-ghost" id="f-reset">Reset</button>
   </div>
+  <p class="muted small" id="count" aria-live="polite">${catalog.length} resources</p>
   <div class="cards" id="cards">${sorted.map(card).join("")}</div>
   <p class="empty" id="empty" hidden>No resources match. <button type="button" class="link" id="f-reset2">Clear filters</button></p>
-</section>
-
-<section class="wrap section cta">
-  <div class="cta-inner">
-    <div><h2>Missing a schema or ontology?</h2><p class="muted">Submit it through GitHub. Every addition is reviewed, validated and evaluated automatically before it is merged.</p></div>
-    <a class="btn" href="/submit/">Submit a resource</a>
-  </div>
 </section>`;
-  return page({
-    title: null,
-    pathname: "/",
-    body,
-    description: `${config.description} ${catalog.length} resources across ${categories.length} domains, scored on FAIR principles and tracked over time.`,
-    graph: [
-      webPage("WebPage", "/", `NeuroSchema — ${config.tagline}`, config.description, { about: { "@id": CATALOG_ID }, primaryImageOfPage: abs("/assets/og-image.png") }),
-      {
-        "@type": "DataCatalog",
-        "@id": CATALOG_ID,
-        name: "NeuroSchema catalog of neuroscience ontologies and schemas",
-        description: config.description,
-        url: config.url + "/",
-        publisher: { "@id": ORG_ID },
-        keywords: ["neuroscience", "ontology", "schema", "metadata", "data standard", "FAIR"],
-        ...(evaluation.generatedAt ? { dateModified: evaluation.generatedAt } : {}),
-        dataset: sorted.map((e) => ({ "@type": "Dataset", "@id": abs(`/o/${e.id}/`) + "#dataset", name: e.name, url: abs(`/o/${e.id}/`) })),
-      },
-    ],
-  });
+  const description = `All ${catalog.length} neuroscience ontologies, schemas, vocabularies and data standards in NeuroSchema, with FAIR scores, versions and adoption.`;
+  return page({ title: "Catalog", pathname: "/catalog/", body, description, graph: [webPage("CollectionPage", "/catalog/", "Catalog", description), catalogLd(sorted), breadcrumbs(trail)] });
+}
+
+function searchPage() {
+  const trail = [["Home", "/"], ["Search", "/search/"]];
+  const body = `
+<section class="page-head wrap search-head">
+  ${crumbsHtml(trail)}
+  <h1>Search</h1>
+  ${searchForm("search-q", "", "search search-page")}
+  <p class="muted small" id="search-status" aria-live="polite">Type to search ${catalog.length} resources by name, acronym, tag, species, format, schema module or maintainer.</p>
+</section>
+<section class="wrap section">
+  <ol class="results" id="results"></ol>
+  <noscript><p>Search needs JavaScript. Browse the <a href="/catalog/">full catalog</a> instead.</p></noscript>
+</section>`;
+  return page({ title: "Search", pathname: "/search/", body, description: "Search neuroscience ontologies, schemas and data standards in NeuroSchema.", scripts: ["/assets/search.js"], graph: [webPage("SearchResultsPage", "/search/", "Search", "Search NeuroSchema."), breadcrumbs(trail)] });
 }
 
 function categoriesPage() {
@@ -509,11 +553,73 @@ function provenanceRows(r) {
   if (r.artifact && !r.artifact.error) rows.push(row(`Artefact header${r.artifact.versionIri ? " (version IRI)" : r.artifact.versionInfo ? " (version info)" : ""}`, r.artifact.source, r.artifact.fetchedAt, stale(r.artifact)));
   if (r.git && !r.git.error) rows.push(row(`Git refs (commit ${r.git.commit.slice(0, 7)}${r.git.latestTag ? `, latest tag ${r.git.latestTag.name}` : ""})`, r.git.url, r.git.fetchedAt, stale(r.git)));
   if (r.github && !r.github.error) rows.push(row("GitHub repository statistics", r.github.source, r.github.fetchedAt, stale(r.github)));
-  if (r.ols && !r.ols.error) rows.push(row("OLS terms, version & release", r.ols.source, r.ols.fetchedAt, stale(r.ols)));
+  if (r.ols && !r.ols.error) rows.push(row("OLS classes, imports, version & release", r.ols.source, r.ols.fetchedAt, stale(r.ols)));
   if (r.obo && !r.obo.error) rows.push(row("OBO Foundry status, license & usages", r.obo.source, r.obo.fetchedAt, stale(r.obo)));
+  if (r.tib && !r.tib.error) rows.push(row("TIB Terminology Service metrics", r.tib.source, r.tib.fetchedAt, stale(r.tib)));
+  if (r.bioregistry && !r.bioregistry.error) rows.push(row("Bioregistry mappings, dependencies & reuse", r.bioregistry.source, r.bioregistry.fetchedAt, stale(r.bioregistry)));
+  if (r.dashboard && !r.dashboard.error) rows.push(row(`OBO Dashboard (checked ${fmtDate(r.dashboard.checkedAt)})`, r.dashboard.page, r.dashboard.fetchedAt, stale(r.dashboard)));
+  if (r.quality) rows.push(row(`ROBOT reason/report in NeuroSchema CI`, null, r.quality.checkedAt, stale(r.quality)));
+  if (r.oops && !r.oops.error) rows.push(row("OOPS! pitfall scan", "https://oops.linkeddata.es", r.oops.checkedAt, stale(r.oops)));
   if (r.bioportal && !r.bioportal.error) rows.push(row("BioPortal release", r.bioportal.source, r.bioportal.fetchedAt, stale(r.bioportal)));
   for (const c of r.citations || []) if (c.count != null) rows.push(row(`Crossref citations (doi:${c.doi})`, c.source, c.fetchedAt, stale(c)));
   return rows.join("");
+}
+
+// Cross-portal view: what OLS, TIB, BioPortal, Bioregistry and the OBO Dashboard report about this resource.
+const idToEntry = Object.fromEntries(catalog.flatMap((x) => [x.obo, x.ols, x.bioregistry].filter(Boolean).map((k) => [String(k).toLowerCase(), x])));
+const ontChip = (k) => (idToEntry[k] ? `<a class="chip chip-link" href="/o/${attr(idToEntry[k].id)}/">${esc(idToEntry[k].acronym || k.toUpperCase())}</a>` : `<a class="chip" href="https://bioregistry.io/${attr(k)}" rel="noopener nofollow">${esc(k.toUpperCase())}</a>`);
+function portalsPanel(e, r) {
+  if (!r) return "";
+  const rows = [];
+  const fmtv = (x) => (x == null ? "—" : fmtNum(x));
+  for (const p of [r.ols, r.tib]) {
+    if (!p || p.error) continue;
+    rows.push(`<tr><td><a href="${attr(p.page)}" rel="noopener">${esc(p.portal)}</a></td><td><code>${esc(p.id)}</code></td><td>${esc(p.version || "—")}</td><td class="num">${fmtv(p.terms)}</td><td class="num">${fmtv(p.properties)}</td><td class="num">${fmtv(p.individuals)}</td><td>${esc(fmtDate(p.loaded))}</td></tr>`);
+  }
+  if (r.bioportal && !r.bioportal.error)
+    rows.push(`<tr><td><a href="${attr(r.bioportal.page)}" rel="noopener">BioPortal</a></td><td><code>${esc(r.bioportal.acronym)}</code></td><td>${esc(r.bioportal.version || "—")}</td><td class="num">${fmtv(r.bioportal.terms)}</td><td class="num">${fmtv(r.bioportal.properties)}</td><td class="num">${fmtv(r.bioportal.individuals)}</td><td>${esc(fmtDate(r.bioportal.released))}</td></tr>`);
+  const d = r.dashboard && !r.dashboard.error ? r.dashboard : null;
+  if (d) rows.push(`<tr><td><a href="${attr(d.page)}" rel="noopener">OBO Dashboard</a></td><td><code>${esc(d.ns)}</code></td><td>${esc((String(d.checkedVersion || "").match(/\d{4}-\d{2}-\d{2}/) || ["—"])[0])}</td><td class="num">${fmtv(d.classes)}</td><td class="num">—</td><td class="num">—</td><td>${esc(fmtDate(d.checkedAt))}</td></tr>`);
+  const br = r.bioregistry && !r.bioregistry.error ? r.bioregistry : null;
+  const MAP_URL = {
+    bioportal: (v) => `https://bioportal.bioontology.org/ontologies/${v}`,
+    ols: (v) => `https://www.ebi.ac.uk/ols4/ontologies/${v}`,
+    "tib.ts": (v) => `https://terminology.tib.eu/ts/ontologies/${v}`,
+    fairsharing: (v) => `https://fairsharing.org/${v}`,
+    "wikidata.entity": (v) => `https://www.wikidata.org/wiki/${v}`,
+    obofoundry: (v) => `https://obofoundry.org/ontology/${String(v).toLowerCase()}.html`,
+    ontobee: (v) => `https://ontobee.org/ontology/${v}`,
+    aberowl: (v) => `http://aber-owl.net/ontology/${v}/`,
+    agroportal: (v) => `https://agroportal.lirmm.fr/ontologies/${v}`,
+    biodivportal: (v) => `https://biodivportal.gfbio.org/ontologies/${v}`,
+  };
+  const mappings = br ? Object.entries(br.mappings).filter(([k]) => MAP_URL[k]).map(([k, v]) => `<a class="chip chip-link" href="${attr(MAP_URL[k](v))}" rel="noopener nofollow">${esc(k)}: ${esc(v)}</a>`) : [];
+  const imp = importsOf(r);
+  const reuse = reusedBy(r);
+  const langs = r.ols?.languages?.length ? r.ols.languages : null;
+  if (!rows.length && !mappings.length && !imp.length && !reuse.length) return "";
+  const d2 = d
+    ? `<dl class="facts compact quality-facts">
+        <div><dt>Logical consistency</dt><dd>${d.consistent === true ? "consistent" : d.consistent === false ? "INCONSISTENT" : "—"}${d.unsatisfiable != null ? ` · ${fmtNum(d.unsatisfiable)} unsatisfiable` : ""}</dd></div>
+        <div><dt>OWL 2 DL</dt><dd>${d.owl2dl == null ? "—" : d.owl2dl ? "yes" : "no"}</dd></div>
+        <div><dt>ROBOT report</dt><dd>${d.robot ? `${fmtNum(d.robot.ERROR)} errors · ${fmtNum(d.robot.WARN)} warnings · ${fmtNum(d.robot.INFO)} info` : "—"}</dd></div>
+        <div><dt>OBO principles</dt><dd>${d.checks ? Object.entries(d.checks).filter(([k]) => /^FP/.test(k)).map(([k, v]) => `<span class="fp fp-${esc(String(v).toLowerCase())}" title="${attr(k)}: ${attr(v)}">${esc(k.split(" ")[0])}</span>`).join("") : "—"}</dd></div>
+        ${d.axioms ? `<div><dt>Axioms</dt><dd>${fmtNum(d.axioms)}${d.reusedPct != null ? ` · ${d.reusedPct}% entities reused` : ""}</dd></div>` : ""}
+      </dl>`
+    : r.quality
+    ? `<dl class="facts compact quality-facts"><div><dt>Logical consistency (ROBOT ${esc(r.quality.reasoner || "ELK")})</dt><dd>${r.quality.consistent === true ? "consistent" : r.quality.consistent === false ? "INCONSISTENT" : "—"}${r.quality.unsatisfiable != null ? ` · ${fmtNum(r.quality.unsatisfiable)} unsatisfiable` : ""}</dd></div>${r.quality.robot ? `<div><dt>ROBOT report</dt><dd>${fmtNum(r.quality.robot.ERROR)} errors · ${fmtNum(r.quality.robot.WARN)} warnings</dd></div>` : ""}</dl>`
+    : "";
+  const oops = r.oops && !r.oops.error ? `<p class="small">OOPS!: ${r.oops.critical} critical · ${r.oops.important} important · ${r.oops.minor} minor pitfall types${r.oops.stale ? ' <span class="pill-stale">carried forward</span>' : ""}</p>` : "";
+  return `<div class="panel" id="portals">
+    <h2>Portals &amp; registries</h2>
+    ${rows.length ? `<div class="table-wrap"><table class="portal-table"><thead><tr><th>Source</th><th>ID</th><th>Version</th><th class="num">Classes</th><th class="num">Properties</th><th class="num">Individuals</th><th>Loaded</th></tr></thead><tbody>${rows.join("")}</tbody></table></div>` : ""}
+    ${r.ols?.iri ? `<p class="small"><span class="muted">Ontology IRI</span> <code>${esc(r.ols.iri)}</code>${r.ols.versionIri ? `<br><span class="muted">Version IRI</span> <code>${esc(r.ols.versionIri)}</code>` : ""}</p>` : ""}
+    ${langs ? `<p class="small"><span class="muted">Languages</span> ${langs.map((l) => `<span class="chip">${esc(l)}</span>`).join(" ")}</p>` : ""}
+    ${imp.length ? `<p class="small"><span class="muted">Imports from (${imp.length})</span><br>${imp.map(ontChip).join(" ")}</p>` : ""}
+    ${reuse.length ? `<p class="small"><span class="muted">Reused by (${reuse.length})</span><br>${reuse.map(ontChip).join(" ")}</p>` : ""}
+    ${d2}${oops}
+    ${mappings.length ? `<p class="small"><span class="muted">Also registered as</span><br>${mappings.join(" ")}</p>` : ""}
+  </div>`;
 }
 
 function versionPanel(r) {
@@ -560,9 +666,10 @@ function entryPage(e) {
     ? RUBRIC.map((rb) => {
         const b = r.breakdown[rb.key];
         if (!b) return "";
-        const pct = Math.max(0, Math.round((b.score / b.max) * 100));
-        return `<div class="bd-row">
-      <div class="bd-label"><span><b class="sym">${esc(rb.symbol)}</b> ${esc(rb.label)}${rb.fair ? ' <span class="fair-tag">FAIR</span>' : ""}</span><span class="bd-num">${b.score}<small>/${b.max}</small></span></div>
+        const na = b.applicable === false;
+        const pct = na ? 0 : Math.max(0, Math.round((b.score / b.max) * 100));
+        return `<div class="bd-row${na ? " is-na" : ""}">
+      <div class="bd-label"><span><b class="sym">${esc(rb.symbol)}</b> ${esc(rb.label)}${rb.fair ? ' <span class="fair-tag">FAIR</span>' : ""}</span><span class="bd-num">${na ? "n/a" : `${b.score}<small>/${b.max}</small>`}</span></div>
       <div class="bar${rb.fair ? " bar-fair" : ""}" role="img" aria-label="${attr(`${rb.label}: ${b.score} of ${b.max}`)}"><span style="width:${pct}%"></span></div>
       <ul class="bd-steps">${(b.steps || []).map((s) => `<li><span>${esc(s.label)}</span><span class="muted">${esc(s.detail)}</span><b>${s.pts > 0 ? "+" : ""}${s.pts}</b></li>`).join("")}</ul>
     </div>`;
@@ -619,13 +726,15 @@ function entryPage(e) {
       ${linkHealth ? `<ul class="link-health" aria-label="Link health">${linkHealth}</ul>` : ""}
     </div>
 
+    ${portalsPanel(e, r)}
+
     ${e.modules?.length ? `<div class="panel"><h2>Schemas &amp; modules <span class="count">${e.modules.length}</span></h2><ul class="modules">${e.modules.map((m) => `<li><a href="${attr(m.url)}" rel="noopener">${esc(m.name)}${ext}</a><span class="muted">${esc(m.note || "")}</span></li>`).join("")}</ul></div>` : ""}
 
     <div class="panel" id="evaluation">
       <h2>Automated evaluation</h2>
       <div class="breakdown">${breakdown}</div>
       ${r?.penalty ? `<div class="bd-row bd-penalty${r.penalty.score ? " is-hit" : ""}"><div class="bd-label"><span><b class="sym">P</b> ${esc(PENALTY.label)}</span><span class="bd-num">${r.penalty.score}</span></div><ul class="bd-steps">${(r.penalty.steps || [{ label: "Activity status", detail: r.penalty.reason, pts: r.penalty.score }]).map((s) => `<li><span>${esc(s.label)}</span><span class="muted">${esc(s.detail)}</span><b>${s.pts || 0}</b></li>`).join("")}</ul></div>` : ""}
-      ${r ? `<p class="bd-total">FAIR subtotal <b>${r.fair}</b>/${FAIR_MAX} · ${r.penalty ? `${r.gross}${r.penalty.score ? ` − ${-r.penalty.score}` : ""} = ` : ""}Total <b>${r.score}</b>/100 → grade <b>${r.grade}</b></p>` : ""}
+      ${r ? `<p class="bd-total">FAIR subtotal <b>${r.fair}</b>/${FAIR_MAX} · earned ${r.earned ?? r.gross}/${r.possible ?? 100}${(r.possible ?? 100) !== 100 ? ` → scaled ${r.gross}` : ""}${r.penalty?.score ? ` − ${-r.penalty.score} inactivity` : ""} = <b>${r.score}</b>/100 → grade <b>${r.grade}</b></p>` : ""}
     </div>
 
     <div class="panel">
@@ -727,7 +836,7 @@ function workedExample() {
     </table></div>
     <p class="math">FAIR = ${RUBRIC.filter((x) => x.fair).map((rb) => r.breakdown[rb.key].score).join(" + ")} = <b>${r.fair}</b> / ${FAIR_MAX}</p>
     <p class="math">Inactivity penalty P = ${r.penalty ? -r.penalty.score : 0} <span class="muted small">(${esc(r.penalty?.reason || "—")})</span></p>
-    <p class="math">Score = max(0, ${RUBRIC.map((rb) => `<span title="${attr(rb.label)}">${r.breakdown[rb.key].score}</span>`).join(" + ")} − ${r.penalty ? -r.penalty.score : 0}) = <b>${r.score}</b> → ${r.score} ≥ ${GRADES.find((g) => g.grade === r.grade).min} → grade <b>${r.grade}</b></p>
+    <p class="math">Score = max(0, 100 · (${RUBRIC.filter((rb) => r.breakdown[rb.key]?.applicable !== false).map((rb) => `<span title="${attr(rb.label)}">${r.breakdown[rb.key].score}</span>`).join(" + ")}) / ${r.possible ?? 100} − ${r.penalty ? -r.penalty.score : 0}) = <b>${r.score}</b> → ${r.score} ≥ ${GRADES.find((g) => g.grade === r.grade).min} → grade <b>${r.grade}</b></p>
   </div>`;
 }
 
@@ -749,7 +858,7 @@ function evaluationPage() {
 <section class="page-head wrap">
   ${crumbsHtml(trail)}
   <h1>Automated evaluation</h1>
-  <p class="lede">Every resource is scored by a script against the <a href="https://doi.org/10.1038/sdata.2016.18" rel="noopener">FAIR principles</a> (Findable, Accessible, Interoperable, Reusable), plus maintenance and community adoption. It queries public sources (link health, git refs, GitHub, the EMBL-EBI Ontology Lookup Service, the OBO Foundry registry, Crossref) and reads the artefact itself to record exactly which version was evaluated. Scores describe how easy a resource is to find, use and rely on today, not its scientific quality.</p>
+  <p class="lede">Every resource is scored by a script against the <a href="https://doi.org/10.1038/sdata.2016.18" rel="noopener">FAIR principles</a>, ontology quality (upper-ontology alignment, reasoner consistency, ROBOT report, OOPS! pitfalls), maintenance and community adoption, minus a progressive inactivity penalty. The rubric is deliberately strict: 100 requires excellence on every axis. It queries OLS, TIB, BioPortal, Bioregistry, the OBO Foundry and its Dashboard, GitHub, git refs and Crossref, and reads the artefact itself to record exactly which version was evaluated. Scores describe how easy a resource is to find, trust and reuse today, not its scientific value.</p>
   <p class="muted">${evaluatedAt ? `Last run ${esc(fmtDateTime(evaluation.generatedAt))} · ` : ""}Rubric v${esc(RUBRIC_VERSION)} · ${runs.length} archived run${runs.length === 1 ? "" : "s"}</p>
 </section>
 
@@ -760,17 +869,19 @@ function evaluationPage() {
 <section class="wrap section" id="formula">
   <h2>The formula</h2>
   <div class="formula">
-    <p class="math big">Score = max(0, <span class="fair-group"><b>F</b> + <b>A</b> + <b>I</b> + <b>R</b></span> + <b>M</b> + <b>U</b> − <b class="pen">P</b>)</p>
-    <p class="small muted">The highlighted group is the FAIR subtotal (max ${FAIR_MAX}); maintenance (M) and adoption (U) add up to ${100 - FAIR_MAX} more. The inactivity penalty (P, 0–30) grows with every year without activity and is subtracted, so unmaintained resources are progressively marked down.</p>
+    <p class="math big">Score = max(0, 100 · (<span class="fair-group"><b>F</b> + <b>A</b> + <b>I</b> + <b>R</b></span> + <b>Q</b> + <b>M</b> + <b>U</b>) / <i>possible</i> − <b class="pen">P</b>)</p>
+    <p class="small muted">The highlighted group is the FAIR subtotal (max ${FAIR_MAX}). Q (ontology quality, max 20) applies to OWL/OBO/RDF ontologies; for schemas and other resources <i>possible</i> = 80 and the result is scaled to 100, otherwise <i>possible</i> = 100. The inactivity penalty P (0–30) grows with every year without activity.</p>
     <dl class="formula-terms">
       ${RUBRIC.map((rb) => `<div${rb.fair ? ' class="is-fair"' : ""}><dt><b>${esc(rb.symbol)}</b> ${esc(rb.label)} <span class="rb-max">max ${rb.max}</span></dt><dd><code>${esc(rb.formula)}</code></dd></div>`).join("")}
       <div class="is-penalty"><dt><b>P</b> ${esc(PENALTY.label)} <span class="rb-max">0 to −30</span></dt><dd><code>${esc(PENALTY.formula)}</code></dd></div>
     </dl>
     <div class="formula-fns">
       <p><code>[x]</code> is 1 if condition <i>x</i> holds, else 0.</p>
-      <p><code>f(months)</code>: ${tbl(MAINTENANCE_STEPS, (s) => esc(s.label))}. Capped at ${MAINTENANCE_CAP} for archived, legacy or OBO-inactive resources.</p>
-      <p><code>g(projects)</code>: ${tbl(ADOPTER_STEPS, (s) => `≥ ${s.min}`)}</p>
-      <p><code>h(stars)</code>: ${tbl(STAR_STEPS, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>k(citations)</code>: ${tbl(CITATION_STEPS, (s) => `≥ ${s.min}`)}</p>
+      <p><code>r(registries)</code>: ${tbl(T.registries, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>i(imports)</code>: ${tbl(T.imports, (s) => `≥ ${s.min}`)}</p>
+      <p><code>u</code>: imports ${UPPER_ONTOLOGIES.slice(0, 4).map((x) => x.toUpperCase()).join("/")} → 4, RO → 2 &nbsp;·&nbsp; <code>c</code>: consistent with 0 unsatisfiable → 6, with unsatisfiable → 2 &nbsp;·&nbsp; <code>q</code>: no ROBOT errors → 2, warnings/class ${T.warnDensity.slice(0, 2).map((t) => `≤ ${t.max} → ${t.pts}`).join(", ")} &nbsp;·&nbsp; <code>o</code>: no critical OOPS! pitfalls → 2, ≤ 2 important → 2</p>
+      <p><code>recency</code>: ${tbl(T.recency, (s) => esc(s.label))} &nbsp;·&nbsp; <code>cadence</code>: ${tbl(T.cadence, (s) => `≥ ${s.min}`)}</p>
+      <p><code>a(projects)</code>: ${tbl(T.adopters, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>reuse</code>: ${tbl(T.reuse, (s) => `≥ ${s.min}`)}</p>
+      <p><code>stars</code>: ${tbl(T.stars, (s) => `≥ ${s.min}`)} &nbsp;·&nbsp; <code>citations</code>: ${tbl(T.citations, (s) => `≥ ${s.min}`)}</p>
       <p>Grade: ${GRADES.map((g) => `<b>${g.grade}</b> ≥ ${g.min}`).join(" · ")}</p>
     </div>
   </div>
@@ -789,8 +900,13 @@ function evaluationPage() {
       <li><b>Artefact</b>: the first 256 KB of the download, read for version IRI / version info.</li>
       <li><b>Git refs</b>: default-branch commit and release tags via git's HTTP endpoint.</li>
       <li><b>GitHub REST API</b>: stars, forks, open issues, last push, latest release, detected license.</li>
-      <li><b>OLS4 API</b>: term counts, version and release date.</li>
+      <li><b>OLS (EMBL-EBI) v2 API</b>: classes, properties, individuals, imports and exports, ontology and version IRI, languages, load time.</li>
+      <li><b>TIB Terminology Service</b>: the same metrics from a second OLS instance, often holding a different release.</li>
+      <li><b>BioPortal</b> (with an API key): latest submission and metrics.</li>
+      <li><b>Bioregistry</b>: cross-portal identifiers (OLS, BioPortal, TIB, FAIRsharing, Wikidata…), dependencies and reuse.</li>
       <li><b>OBO Foundry registry</b>: activity status, license and registered usages (shown as adopters).</li>
+      <li><b>OBO Dashboard</b>: OBO principle checks, ROBOT report, reasoner consistency and unsatisfiable classes, ontologies that reuse it.</li>
+      <li><b>NeuroSchema CI</b>: for ontologies outside the OBO Dashboard, ROBOT reasons (ELK) and reports on the artefact; every ontology is also sent to the <a href="https://oops.linkeddata.es" rel="noopener">OOPS!</a> pitfall scanner.</li>
       <li><b>Crossref</b>: citation counts of each resource's reference paper.</li>
       <li><b>Curated data</b>: adopting projects, modules and tooling submitted through GitHub and reviewed before merge.</li>
     </ul>
@@ -816,7 +932,7 @@ function evaluationPage() {
         return `<tr>
         <td><a href="/o/${attr(e.id)}/"><b>${esc(e.acronym || e.name)}</b></a></td>
         <td class="muted ver-cell" title="${attr(v || "")}">${esc(v ? (v.length > 26 ? v.slice(0, 25) + "…" : v) : "—")}</td>
-        ${RUBRIC.map((rb) => `<td class="num">${r ? r.breakdown[rb.key].score : "—"}</td>`).join("")}
+        ${RUBRIC.map((rb) => `<td class="num">${r ? (r.breakdown[rb.key]?.applicable === false ? '<span class="muted">n/a</span>' : r.breakdown[rb.key]?.score ?? "—") : "—"}</td>`).join("")}
         <td class="num${r?.penalty?.score ? " pen" : ""}">${r?.penalty ? r.penalty.score || "0" : "—"}</td>
         <td class="num"><b>${r?.fair ?? "—"}</b></td>
         <td class="num" data-v="${r?.score ?? -1}">${gradeBadge(e, "sm")}</td>
@@ -976,7 +1092,7 @@ function aboutPage() {
 }
 
 function notFound() {
-  return page({ title: "Not found", pathname: "/404", noindex: true, body: `<section class="page-head wrap"><h1>Page not found</h1><p class="lede">That page doesn't exist. Try the <a href="/#explore">catalog</a> or <a href="/categories/">categories</a>.</p></section>` });
+  return page({ title: "Not found", pathname: "/404", noindex: true, body: `<section class="page-head wrap"><h1>Page not found</h1><p class="lede">That page doesn't exist. Try the <a href="/catalog/">catalog</a> or <a href="/search/">search</a> or <a href="/categories/">categories</a>.</p></section>` });
 }
 
 // ---------- data outputs ----------
@@ -984,7 +1100,7 @@ function provJsonLd(e, r) {
   if (!r) return null;
   const used = [
     ...Object.values(r.links || {}).filter(Boolean).map((l) => ({ "@id": l.url, "prov:atTime": l.checkedAt })),
-    ...[r.artifact, r.git, r.github, r.ols, r.obo, r.bioportal, ...(r.citations || [])]
+    ...[r.artifact, r.git, r.github, r.ols, r.tib, r.obo, r.dashboard, r.bioregistry, r.bioportal, ...(r.citations || [])]
       .filter((x) => x && x.source && !x.error)
       .map((x) => ({ "@id": x.source, "prov:atTime": x.fetchedAt, ...(x.stale ? { "neuroschema:carriedForward": true } : {}) })),
   ];
@@ -1071,6 +1187,21 @@ for (const e of catalog) {
   put(`o/${e.id}/entry.json`, JSON.stringify(record(e), null, 2));
 }
 put("evaluation/index.html", evaluationPage());
+put("catalog/index.html", catalogPage());
+put("search/index.html", searchPage());
+put(
+  "search-index.json",
+  JSON.stringify(
+    catalog.map((e) => {
+      const r = ev(e.id);
+      return {
+        id: e.id, acronym: e.acronym || null, name: e.name, description: e.description, category: catById[e.category].name, kind: KIND_LABEL[e.kind] || e.kind,
+        tags: e.tags || [], species: e.species || [], formats: e.formats || [], modules: (e.modules || []).map((m) => m.name), maintainer: e.maintainer || null,
+        score: r?.score ?? null, grade: r?.grade ?? null, fair: r?.fair ?? null, version: versionLabel(r), legacy: e.status === "legacy",
+      };
+    })
+  )
+);
 put("submit/index.html", submitPage());
 put("about/index.html", aboutPage());
 put("404.html", notFound());

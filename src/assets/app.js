@@ -33,6 +33,7 @@
       name: (a, b) => a.dataset.name.localeCompare(b.dataset.name),
       activity: (a, b) => (b.dataset.activity || "").localeCompare(a.dataset.activity || ""),
       adopt: (a, b) => b.dataset.adopt - a.dataset.adopt || b.dataset.score - a.dataset.score,
+      fair: (a, b) => b.dataset.fair - a.dataset.fair || b.dataset.score - a.dataset.score,
     };
 
     function apply(push = true) {
@@ -60,7 +61,7 @@
         if (f.sort.value !== "score") p.set("sort", f.sort.value);
         if (f.active.checked) p.set("active", "1");
         const s = p.toString();
-        history.replaceState(null, "", s ? `?${s}#explore` : location.pathname + (location.hash || ""));
+        history.replaceState(null, "", s ? `?${s}` : location.pathname);
       }
     }
 
@@ -68,11 +69,9 @@
     q.addEventListener("input", () => {
       clearTimeout(typing);
       typing = setTimeout(apply, 80);
-      if (q.value && explore.getBoundingClientRect().top > innerHeight) explore.scrollIntoView({ behavior: "smooth" });
+
     });
-    q.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") explore.scrollIntoView({ behavior: "smooth" });
-    });
+
     Object.values(f).forEach((el) => el.addEventListener("change", () => apply()));
     const reset = () => {
       q.value = "";
@@ -85,14 +84,16 @@
     $("#f-reset2")?.addEventListener("click", reset);
     if (params.toString()) apply(false);
 
-    // "/" focuses search
-    addEventListener("keydown", (e) => {
-      if (e.key === "/" && !/input|select|textarea/i.test(document.activeElement.tagName)) {
-        e.preventDefault();
-        q.focus();
-      }
-    });
   }
+
+  // "/" focuses the page's search or filter box
+  addEventListener("keydown", (e) => {
+    const box = document.getElementById("q") || document.querySelector("[data-search]");
+    if (box && e.key === "/" && !/input|select|textarea/i.test(document.activeElement.tagName)) {
+      e.preventDefault();
+      box.focus();
+    }
+  });
 
   // Sortable tables
   for (const table of $$("table.sortable")) {

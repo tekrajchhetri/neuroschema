@@ -53,3 +53,20 @@
 **Decision** – The `/submit/` form produces an entry and opens a pre-filled GitHub issue form. `submission.yml` converts the issue into a PR using `scripts/issue-to-entry.mjs`. `ci.yml` validates (offline and online), runs a FAIR evaluation preview, and comments on the PR. `evaluate.yml` re-evaluates on merge. Validation rules live in one place (`scripts/validate-lib.mjs`), mirrored by `data/catalog.schema.json`.
 **Why** – Git gives review, history and attribution for free, and the static site needs no backend. Rejected: a form backend or database, which would need hosting, spam handling and a separate audit trail.
 **Consequences** – Needs a `BOT_TOKEN` secret so bot PRs trigger checks, a `submission` label, and branch protection requiring the Checks status. PRs from forks get results in the job summary, because forks can't receive comments with the default token.
+
+## D-010: Cross-portal data (OLS v2, TIB, BioPortal, Bioregistry, OBO Dashboard)   (2026-10-25, status: accepted)
+**Context** – OLS shows much more than we captured (imports/exports, classes/properties/individuals, IRIs, languages). Other portals hold their own copies, sometimes different releases.
+**Decision** – The evaluator uses the OLS v2 API, falling back to v1. It also queries the TIB Terminology Service (same software), Bioregistry and the OBO Dashboard. Bioregistry runs first, because its mappings give each resource's ID in the other portals; BioPortal is queried when `BIOPORTAL_API_KEY` is set. Entry pages show a Portals & registries panel. It has a per-portal version and count table, imports and reused-by links (internal where we catalog the ontology), dashboard quality results, and IDs in 10+ portals.
+**Why** – No key or quota is needed except for BioPortal. Rejected: AberOWL (API redirects, so it's linked only via Bioregistry) and FAIRsharing (needs a login), which are linked only.
+**Consequences** – Schemas without a Bioregistry prefix get fewer registry points. An optional `bioregistry` field in the catalog sets the prefix explicitly.
+
+## D-011: Rubric v3 — strict, with ontology quality   (2026-10-25, status: accepted; supersedes D-007 weights)
+**Context** – The owner wants a strict rubric where 100 is barely reachable, and that checks upper-ontology alignment, consistency and OOPS! results.
+**Decision** – F/A/I/R are 12 points each. They add sub-criteria: number of registries (F4), metadata persistence (A2), imports (I3), version declared in the artefact (R1.2) and OBO principles pass rate (R1.3). Q (20) covers BFO/COB and RO imports, reasoner consistency, ROBOT report and OOPS! pitfalls. M (16) is recency plus release cadence, and U (16) is adopters, reuse and stars/citations. P is unchanged (progressive). Non-ontologies are scaled from 80 to 100, and grades now run A–E.
+**Why** – Consistency evidence comes from the OBO Dashboard for OBO ontologies, and from our own ROBOT + ELK run in CI for the rest. OOPS! is unreachable from some networks and rate-limited, so when it's unavailable its 4 points are excluded and Q is rescaled rather than penalised. Unchecked consistency scores 0, so ontologies are rewarded for being checkable. Rejected: running HermiT (too slow on large ontologies) and FOOPS! (same availability problem as OOPS!).
+**Consequences** – After this change the best score is 99 (CL). Non-OBO ontologies get Q = 0 for consistency/ROBOT until the first CI quality run writes `data/quality/<id>.json`.
+
+## D-012: Landing shows highlights; dedicated catalog and search pages   (2026-10-25, status: accepted)
+**Context** – The home page listed every resource, and search only filtered that list.
+**Decision** – The home page shows the hero, domains, the top 6 by score and the 6 most recently updated. `/catalog/` holds the full filterable list, and `/search/?q=` is a ranked results page over `search-index.json`. Ranking weights matches by field: acronym > name > tags > modules > description. The schema.org SearchAction points to `/search/`.
+**Consequences** – Links to `/#explore` were replaced by `/catalog/`.

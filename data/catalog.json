@@ -2069,5 +2069,31 @@
       "curation",
       "BICAN"
     ]
+  },
+  {
+    "id": "addicto",
+    "acronym": "AddictO",
+    "name": "Addiction Ontology",
+    "category": "behavior",
+    "kind": "ontology",
+    "description": "An ontology being developed to cover all aspects of addiction research. It imports from, and is reused by, the Behaviour Change Intervention Ontology (BCIO).",
+    "formats": [
+      "OWL"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "AddictO consortium (UCL)",
+    "homepage": "https://addictovocab.org",
+    "repository": "https://github.com/addicto-org/addiction-ontology",
+    "download": "http://addictovocab.org/addicto.owl",
+    "ols": "addicto",
+    "publications": [],
+    "usedBy": [],
+    "tags": [
+      "addiction",
+      "behaviour",
+      "psychiatry"
+    ]
   }
 ]

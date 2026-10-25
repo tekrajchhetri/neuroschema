@@ -4,7 +4,7 @@
 export const KINDS = ["ontology", "schema", "vocabulary", "atlas", "data-standard", "knowledge-base"];
 const ALLOWED = new Set([
   "id", "acronym", "name", "category", "kind", "description", "formats", "species", "maintainer", "license",
-  "homepage", "repository", "download", "ols", "obo", "bioportal", "status", "publications", "usedBy", "modules", "tools", "tags",
+  "homepage", "repository", "download", "ols", "obo", "bioportal", "bioregistry", "status", "publications", "usedBy", "modules", "tools", "tags",
 ]);
 const URL_FIELDS = ["homepage", "repository", "download"];
 const isUrl = (s) => typeof s === "string" && /^https?:\/\/[^\s]+$/.test(s);

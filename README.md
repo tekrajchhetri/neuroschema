@@ -10,28 +10,43 @@ npm run build             # build into dist/ (also validates the catalog)
 npm run validate          # structural checks: fields, ids, URLs, DOIs format, duplicates
 npm run validate:online   # + links resolve, DOIs exist in Crossref, OLS ids are real
 npm run evaluate          # run the evaluation → data/evaluation.json + data/runs/<run>.json
+ROBOT_JAR=robot.jar node scripts/quality.mjs   # ontology quality checks (needs Java); CI runs this weekly
 npm run rescore           # recompute scores from stored facts after a rubric change (no network)
 ```
 
 Requires Node ≥ 18. There's nothing to `npm install`. Set `GITHUB_TOKEN` locally to avoid GitHub's 60 requests/hour limit when running `npm run evaluate`.
 
-## How scoring works
+## How scoring works (rubric v3, deliberately strict)
 
-`Score = max(0, F + A + I + R + M + U − P)`
+`Score = max(0, 100 · (F + A + I + R + Q + M + U) / possible − P)`. Here `possible` is 100 for ontologies and 80 for everything else, because Q only applies to ontologies.
 
 | | Criterion | Max | Measures |
 |---|---|---|---|
-| F | Findable | 15 | persistent identifier, registry listing, citable reference |
-| A | Accessible | 15 | homepage + artefact retrievable over HTTP(S) |
-| I | Interoperable | 15 | formal machine-readable format, semantic-web IRIs |
-| R | Reusable | 15 | clear license, versioned releases |
-| M | Maintenance | 20 | time since last commit/release/file update |
-| U | Adoption | 20 | documented adopting projects, GitHub stars / citations |
-| P | Inactivity penalty | −30 | −4 per year inactive after a 1-year grace (max −20), −10 more if archived/legacy/OBO-inactive |
+| F | Findable | 12 | PID, number of portals/registries indexing it, citable reference |
+| A | Accessible | 12 | homepage, artefact over HTTP(S), metadata persists in a registry |
+| I | Interoperable | 12 | formal format, semantic-web IRIs, imports other vocabularies |
+| R | Reusable | 12 | open license, version declared *inside* the artefact, OBO principles pass rate |
+| Q | Ontology quality | 20 | upper ontology (BFO/COB) + RO, reasoner consistency, ROBOT report, OOPS! pitfalls |
+| M | Maintenance | 16 | recency + releases in the last 12 months |
+| U | Adoption | 16 | adopting projects, reuse by other ontologies, stars/citations |
+| P | Inactivity penalty | −30 | −4 per year inactive after 1 year (max −20), −10 more if archived/legacy/OBO-inactive |
 
-The rules live in [`scripts/rubric.mjs`](scripts/rubric.mjs). The site's `/evaluation/` page shows the formula, a worked example, every score and the run history.
+Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scripts/rubric.mjs`](scripts/rubric.mjs).
 
-**Versions and provenance.** Each run reads the first 256 KB of the artefact for `owl:versionIRI` / `versionInfo`. It also records the default-branch commit and release tags (via git's HTTP endpoint), plus OLS/BioPortal versions. Every fact stores its source URL and retrieval time. Each run is archived, unchanged, in `data/runs/`, which is how per-entry history and change logs are built. If a source fails, the last good value is carried forward and flagged.
+**Data sources:**
+- link checks
+- the artefact itself (version IRI)
+- git refs (commit, tags)
+- GitHub
+- OLS v2 (classes, properties, individuals, imports/exports, IRIs, languages)
+- TIB Terminology Service
+- BioPortal (with an API key)
+- Bioregistry (cross-portal IDs, dependencies, reuse)
+- OBO Foundry registry and OBO Dashboard (principle checks, ROBOT report, consistency, reuse)
+- Crossref
+- `scripts/quality.mjs` in CI: ROBOT ELK reasoning and report for ontologies outside the OBO Dashboard, plus the OOPS! pitfall scanner
+
+**Versions and provenance.** Each run records the exact version evaluated: the version IRI/info in the artefact, or else the OLS version, release tag or commit. Every fact stores its source URL and retrieval time. Runs are archived, unchanged, in `data/runs/`, which feeds the per-entry history. Failed lookups carry forward the last good value, flagged.
 
 ## Layout
 
