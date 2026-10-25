@@ -90,3 +90,9 @@
 **Why** – Consistency is the property a reasoner can check objectively and that downstream users depend on most. A local OOPS! removes the external dependency. Python/rdflib keeps a pitfall check alive even without Docker or Java. Rejected: rescaling when a scan is unavailable, which hid problems.
 
 **Consequences** – CI builds the OOPS! image (cached with buildx) and installs `requirements.txt`. OOPS! loads an ontology's imports, so very large ontologies may time out and fall back to the Python scan.
+
+## D-014: The Evaluate Action is the only writer of evaluation results   (2026-10-25, status: accepted; supersedes the rebase-only mitigation)
+**Context** – `data/evaluation.json` and `data/quality/*` conflicted twice. Both local runs and the scheduled Action wrote them, and each run rewrites the whole file, so git can never merge two versions.
+**Decision** – Only the "Evaluate catalog" Action writes `data/evaluation.json`, `data/runs/` and `data/quality/` (signalled by `GITHUB_ACTIONS` / `NEUROSCHEMA_CI`; see `scripts/paths.mjs`). Local `evaluate`, `quality` and `rescore` write to `.local/data/` (git-ignored), and the build previews them when newer. Three guards enforce this: `.githooks/pre-commit` (enabled by `npm run setup` / `npm run dev`) blocks local commits of generated data; the Checks workflow fails PRs that change it; and the Action rebases before pushing, retrying on conflict. The Action also runs when evaluation code changes.
+**Why** – With a single writer there is never a second version to conflict with. Rejected: a custom git merge driver, which needs per-clone config and would silently pick a side, and moving data to a separate branch, which would make the Vercel build fetch over the network.
+**Consequences** – To change the published scores, push code or catalog changes and let the Action run, or start it manually. Merges that bring in the Action's commits are always allowed by the hook.
