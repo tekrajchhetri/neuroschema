@@ -1,0 +1,9 @@
+{
+  "id": "hp",
+  "artefact": "http://purl.obolibrary.org/obo/hp.owl",
+  "checkedAt": "2026-10-25T19:08:45.522Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:08:56.014Z"
+  }
+}

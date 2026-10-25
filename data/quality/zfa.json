@@ -1,0 +1,9 @@
+{
+  "id": "zfa",
+  "artefact": "http://purl.obolibrary.org/obo/zfa.owl",
+  "checkedAt": "2026-10-25T19:07:00.600Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:07:11.092Z"
+  }
+}

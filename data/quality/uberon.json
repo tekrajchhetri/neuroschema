@@ -1,0 +1,9 @@
+{
+  "id": "uberon",
+  "artefact": "http://purl.obolibrary.org/obo/uberon.owl",
+  "checkedAt": "2026-10-25T19:05:44.766Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:05:55.265Z"
+  }
+}

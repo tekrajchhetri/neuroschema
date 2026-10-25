@@ -1,0 +1,18 @@
+{
+  "id": "dhba",
+  "artefact": "https://purl.brain-bican.org/ontology/dhbao/dhbao.owl",
+  "checkedAt": "2026-10-25T19:06:47.610Z",
+  "sha256": "a23c578523f34ab2376494cc5efe206df069cd9d3a3f5b0aa86cabb319112dcb",
+  "robot": {
+    "reasoner": "ELK",
+    "robotVersion": "ROBOT version 1.9.7",
+    "consistent": null,
+    "reasonError": "INVALID ONTOLOGY FILE ERROR Could not load a valid ontology from file: dhba.owl\nFor details see: http://robot.obolibrary.org/errors#invalid-ontology-file-error\nUse the -vvv option to show the stack trace.\nUse the --help option to see usage information.\n",
+    "checkedAt": "2026-10-25T19:06:50.174Z",
+    "sha256": "a23c578523f34ab2376494cc5efe206df069cd9d3a3f5b0aa86cabb319112dcb"
+  },
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:07:00.600Z"
+  }
+}

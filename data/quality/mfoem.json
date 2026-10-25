@@ -1,0 +1,9 @@
+{
+  "id": "mfoem",
+  "artefact": "http://purl.obolibrary.org/obo/mfoem.owl",
+  "checkedAt": "2026-10-25T19:08:14.044Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:08:24.536Z"
+  }
+}

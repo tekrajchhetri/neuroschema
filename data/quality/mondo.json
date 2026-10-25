@@ -1,0 +1,9 @@
+{
+  "id": "mondo",
+  "artefact": "http://purl.obolibrary.org/obo/mondo.owl",
+  "checkedAt": "2026-10-25T19:08:35.029Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:08:45.521Z"
+  }
+}

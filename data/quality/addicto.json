@@ -1,0 +1,23 @@
+{
+  "id": "addicto",
+  "artefact": "http://addictovocab.org/addicto.owl",
+  "checkedAt": "2026-10-25T19:09:56.475Z",
+  "sha256": "82db8f14c9ddbd265e76756f51d65718a1c58cf2b25da183a98fd9a9732487f7",
+  "robot": {
+    "reasoner": "ELK",
+    "robotVersion": "ROBOT version 1.9.7",
+    "consistent": true,
+    "unsatisfiable": 0,
+    "robot": {
+      "ERROR": 488,
+      "WARN": 279,
+      "INFO": 61
+    },
+    "checkedAt": "2026-10-25T19:10:06.179Z",
+    "sha256": "82db8f14c9ddbd265e76756f51d65718a1c58cf2b25da183a98fd9a9732487f7"
+  },
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:10:16.458Z"
+  }
+}
