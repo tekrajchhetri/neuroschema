@@ -1,0 +1,18 @@
+{
+  "id": "pbao",
+  "artefact": "https://purl.brain-bican.org/ontology/pbao/pbao.owl",
+  "checkedAt": "2026-10-25T19:09:16.999Z",
+  "sha256": "c180886aab6822d494926624a380b9b79cdc3e99cf937b7bace0f9122221b6bc",
+  "robot": {
+    "reasoner": "ELK",
+    "robotVersion": "ROBOT version 1.9.7",
+    "consistent": null,
+    "reasonError": "INVALID ONTOLOGY FILE ERROR Could not load a valid ontology from file: pbao.owl\nFor details see: http://robot.obolibrary.org/errors#invalid-ontology-file-error\nUse the -vvv option to show the stack trace.\nUse the --help option to see usage information.\n",
+    "checkedAt": "2026-10-25T19:09:20.384Z",
+    "sha256": "c180886aab6822d494926624a380b9b79cdc3e99cf937b7bace0f9122221b6bc"
+  },
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:09:30.491Z"
+  }
+}

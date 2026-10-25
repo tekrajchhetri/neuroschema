@@ -16,11 +16,13 @@ import { fileURLToPath } from "node:url";
 import os from "node:os";
 import path from "node:path";
 import { isOntology } from "./rubric.mjs";
+import { outData, trackedData } from "./paths.mjs";
 
 const run = promisify(execFile);
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const catalog = JSON.parse(await readFile(path.join(root, "data/catalog.json"), "utf8"));
-const outDir = path.join(root, "data/quality");
+const outDir = path.join(outData, "quality");
+const trackedDir = path.join(trackedData, "quality");
 const work = path.join(os.tmpdir(), "neuroschema-quality");
 const ROBOT = process.env.ROBOT_JAR;
 const MAX_MB = Number(process.env.MAX_MB || 150);
@@ -145,7 +147,8 @@ const targets = catalog.filter((e) => isOntology(e) && e.download && (!only || o
 console.log(`Quality checks for ${targets.length} ontologies (ROBOT: ${robotVersion || "not available"}; OOPS! image: ${OOPS_IMAGE || "none"})`);
 for (const e of targets) {
   const out = path.join(outDir, `${e.id}.json`);
-  const prev = existsSync(out) ? JSON.parse(await readFile(out, "utf8")) : {};
+  const prevFile = [out, path.join(trackedDir, `${e.id}.json`)].find(existsSync);
+  const prev = prevFile ? JSON.parse(await readFile(prevFile, "utf8")) : {};
   const rec = { id: e.id, artefact: e.download, checkedAt: new Date().toISOString() };
   const dir = path.join(work, e.id);
   await mkdir(dir, { recursive: true });

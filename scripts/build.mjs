@@ -6,15 +6,22 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { RUBRIC, PENALTY, GRADES, RUBRIC_VERSION, FAIR_MAX, T, UPPER_ONTOLOGIES, adopters, imports as importsOf, reusedBy } from "./rubric.mjs";
 import { validateCatalog, KINDS } from "./validate-lib.mjs";
+import { trackedData, localData } from "./paths.mjs";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = async (p) => JSON.parse(await readFile(path.join(root, p), "utf8"));
 const config = await read("site.config.json");
 const categories = await read("data/categories.json");
 const catalog = await read("data/catalog.json");
-const evaluation = existsSync(path.join(root, "data/evaluation.json")) ? await read("data/evaluation.json") : { entries: {} };
-const runsDir = path.join(root, "data/runs");
-const runs = existsSync(runsDir) ? await Promise.all((await readdir(runsDir)).filter((f) => f.endsWith(".json")).sort().map((f) => read(`data/runs/${f}`))) : [];
+// Tracked results (written by the Evaluate catalog Action) plus any newer local preview in .local/data/.
+const readIf = async (f) => (existsSync(f) ? JSON.parse(await readFile(f, "utf8")) : null);
+const evalCandidates = [await readIf(path.join(trackedData, "evaluation.json")), await readIf(path.join(localData, "evaluation.json"))].filter(Boolean);
+const stamp = (x) => String(x.rescoredAt && x.rescoredAt > x.generatedAt ? x.rescoredAt : x.generatedAt);
+const evaluation = evalCandidates.sort((a, b) => stamp(b).localeCompare(stamp(a)))[0] || { entries: {} };
+const runFiles = new Map();
+for (const dir of [path.join(trackedData, "runs"), path.join(localData, "runs")])
+  if (existsSync(dir)) for (const f of (await readdir(dir)).filter((f) => f.endsWith(".json"))) runFiles.set(f, path.join(dir, f));
+const runs = await Promise.all([...runFiles.keys()].sort().map(async (f) => JSON.parse(await readFile(runFiles.get(f), "utf8"))));
 const dist = path.join(root, "dist");
 const BUILD_ID = Date.now().toString(36);
 
@@ -1223,4 +1230,5 @@ for (const [p, content] of files) {
   await mkdir(path.dirname(out), { recursive: true });
   await writeFile(out, content);
 }
+if (existsSync(path.join(localData, "evaluation.json"))) console.log(`Note: previewing local evaluation data from .local/data (not committed). Deploys use data/ from the Evaluate catalog Action.`);
 console.log(`Built ${files.size} files into dist/ (${catalog.length} entries, ${categories.length} categories, ${runs.length} archived run${runs.length === 1 ? "" : "s"}${evaluatedAt ? `, latest evaluation ${evaluatedAt}` : ""})`);

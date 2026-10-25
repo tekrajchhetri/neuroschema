@@ -1,0 +1,12 @@
+{
+  "id": "fma",
+  "artefact": "http://purl.obolibrary.org/obo/fma.owl",
+  "checkedAt": "2026-10-25T19:05:55.266Z",
+  "robot": {
+    "error": "file is 208 MB (limit 150 MB)"
+  },
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:06:07.130Z"
+  }
+}

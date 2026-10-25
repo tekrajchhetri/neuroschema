@@ -1,0 +1,9 @@
+{
+  "id": "chebi",
+  "artefact": "http://purl.obolibrary.org/obo/chebi.owl",
+  "checkedAt": "2026-10-25T19:09:06.507Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:09:16.999Z"
+  }
+}

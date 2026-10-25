@@ -1,0 +1,9 @@
+{
+  "id": "cl",
+  "artefact": "http://purl.obolibrary.org/obo/cl.owl",
+  "checkedAt": "2026-10-25T19:07:32.076Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:07:42.566Z"
+  }
+}

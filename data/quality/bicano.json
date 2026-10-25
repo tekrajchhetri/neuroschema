@@ -1,15 +1,18 @@
 {
   "id": "bicano",
   "artefact": "https://purl.brain-bican.org/ontology/bicano.owl",
-  "checkedAt": "2026-10-25T19:20:21.927Z",
-  "sha256": "9a4c4385d21c4fdc510fb71980cfa8e411997103e9775a35e77ef70eb491c524",
+  "checkedAt": "2026-10-25T19:09:43.485Z",
+  "sha256": "c52a926d38b3a21e8381723d3a98b1560ae30e8872d019d1a74ce1b77a3ec480",
+  "robot": {
+    "reasoner": "ELK",
+    "robotVersion": "ROBOT version 1.9.7",
+    "consistent": null,
+    "reasonError": "INVALID ONTOLOGY FILE ERROR Could not load a valid ontology from file: bicano.owl\nFor details see: http://robot.obolibrary.org/errors#invalid-ontology-file-error\nUse the -vvv option to show the stack trace.\nUse the --help option to see usage information.\n",
+    "checkedAt": "2026-10-25T19:09:46.360Z",
+    "sha256": "c52a926d38b3a21e8381723d3a98b1560ae30e8872d019d1a74ce1b77a3ec480"
+  },
   "oops": {
-    "error": "no pitfall scanner succeeded",
-    "attempts": [
-      "local OOPS!: Command failed: docker run --rm -v /var/folders/qc/ymnxqz0x7g70whhm9jqspd8r0000gn/T/neuroschema-quality/bicano:/work neuroschema/oops --input-file /work/ontology.owl\nPicked up JAVA_TOOL_OPTIONS: -Xmx4",
-      "Python scan: Command failed: python3 /Users/tekrajchhetri/Documents/neuroschema.org/scripts/pitfalls.py scan /var/folders/qc/ymnxqz0x7g70whhm9jqspd8r0000gn/T/neuroschema-quality/bicano/ontology.owl\nfile:///var/fol"
-    ],
-    "checkedAt": "2026-10-25T19:20:23.261Z",
-    "sha256": "9a4c4385d21c4fdc510fb71980cfa8e411997103e9775a35e77ef70eb491c524"
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:09:56.474Z"
   }
 }

@@ -13,6 +13,7 @@
     "validate:online": "node scripts/validate.mjs --online",
     "evaluate": "node scripts/evaluate.mjs",
     "rescore": "node scripts/rescore.mjs",
-    "dev": "node scripts/build.mjs && node scripts/serve.mjs"
+    "dev": "git config core.hooksPath .githooks; node scripts/build.mjs && node scripts/serve.mjs",
+    "setup": "git config core.hooksPath .githooks && git config pull.rebase true && echo 'Git hooks enabled; pull uses rebase.'"
   }
 }

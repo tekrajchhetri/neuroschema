@@ -1,0 +1,9 @@
+{
+  "id": "wbbt",
+  "artefact": "http://purl.obolibrary.org/obo/wbbt.owl",
+  "checkedAt": "2026-10-25T19:07:21.584Z",
+  "oops": {
+    "error": "fetch failed",
+    "checkedAt": "2026-10-25T19:07:32.076Z"
+  }
+}

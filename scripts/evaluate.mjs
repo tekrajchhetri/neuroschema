@@ -19,15 +19,18 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { RUBRIC_VERSION, scoreEntry } from "./rubric.mjs";
+import { root, outData, trackedData, IS_CI } from "./paths.mjs";
 
 export const EVALUATOR_VERSION = "2.0.0";
 
-const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const catalog = JSON.parse(await readFile(path.join(root, "data/catalog.json"), "utf8"));
-const outFile = path.join(root, "data/evaluation.json");
-const runsDir = path.join(root, "data/runs");
+const outFile = path.join(outData, "evaluation.json");
+const runsDir = path.join(outData, "runs");
+const trackedFile = path.join(trackedData, "evaluation.json");
 const only = process.env.ONLY ? new Set(process.env.ONLY.split(",").filter(Boolean)) : null;
-const previous = existsSync(outFile) ? JSON.parse(await readFile(outFile, "utf8")) : { entries: {} };
+// Previous results for carry-forward: the newer of the local and the tracked copy.
+const readEval = async (f) => (existsSync(f) ? JSON.parse(await readFile(f, "utf8")) : null);
+const previous = [await readEval(outFile), await readEval(trackedFile)].filter(Boolean).sort((a, b) => String(b.generatedAt).localeCompare(String(a.generatedAt)))[0] || { entries: {} };
 
 const UA = "Mozilla/5.0 (compatible; neuroschema-evaluator/1.1; +https://neuroschema.org/evaluation/)";
 const GH = process.env.GITHUB_TOKEN;
@@ -344,8 +347,8 @@ async function dashboard(ns) {
 
 // Quality checks produced by the CI job (scripts/quality.mjs): ROBOT reason/report and OOPS!.
 async function qualityFile(id) {
-  const f = path.join(root, "data/quality", `${id}.json`);
-  if (!existsSync(f)) return { quality: null, oops: null };
+  const f = [path.join(outData, "quality", `${id}.json`), path.join(trackedData, "quality", `${id}.json`)].find(existsSync);
+  if (!f) return { quality: null, oops: null };
   const q = JSON.parse(await readFile(f, "utf8"));
   return { quality: q.robot ? { ...q.robot, source: `data/quality/${id}.json` } : null, oops: q.oops ? { ...q.oops, source: `data/quality/${id}.json` } : null };
 }
@@ -471,4 +474,4 @@ await writeFile(outFile, JSON.stringify(out, null, 2) + "\n");
 
 const stale = results.filter(([, r]) => r.github?.stale || r.ols?.stale || r.obo?.stale).map(([id]) => id);
 if (stale.length) console.log(`Carried forward last good values for failed lookups: ${stale.join(", ")}`);
-console.log(`Wrote data/evaluation.json${process.env.NO_ARCHIVE ? "" : ` and data/runs/${runId}.json`}`);
+console.log(`Wrote ${path.relative(root, outFile)}${process.env.NO_ARCHIVE ? "" : ` and ${path.relative(root, runsDir)}/${runId}.json`}${IS_CI ? "" : " (local preview; tracked results are written only by the Evaluate catalog Action)"}`);
