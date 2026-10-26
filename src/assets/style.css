@@ -433,3 +433,9 @@ mark { background: var(--gold-soft); color: inherit; border-radius: 3px; padding
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grade-E { color: #f3a6cb; background: #3a1428; } }
 .grade-dist { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 @media (max-width: 640px) { .grade-dist { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* cookie consent */
+.consent { position: fixed; z-index: 50; left: 16px; right: 16px; bottom: 16px; max-width: 720px; margin: 0 auto; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 14px 18px; background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 18px 50px -12px rgb(0 0 0 / .35); }
+.consent[hidden] { display: none; }
+.consent p { margin: 0; font-size: .9rem; flex: 1 1 360px; }
+.consent-actions { display: flex; gap: 8px; }
