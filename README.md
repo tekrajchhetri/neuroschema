@@ -2,6 +2,8 @@
 
 A curated catalog of neuroscience ontologies, schemas, vocabularies and data standards. Every entry is evaluated automatically against the FAIR principles, maintenance and community adoption, with a progressive inactivity penalty. Each run records the exact version evaluated and keeps full provenance. The site is fully static, with no runtime dependencies.
 
+<img width="1508" height="847" alt="Screenshot 2026-10-26 at 4 45 05 PM" src="https://github.com/user-attachments/assets/87855255-1a5a-4bf9-b9b8-ea2ccb0c64c0" />
+
 ## Quick start
 
 ```bash
