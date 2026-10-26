@@ -5,7 +5,7 @@
 // ROBOT quality report and OOPS! pitfalls. M = maintenance, U = adoption, P = inactivity penalty.
 // Change weights here and bump RUBRIC_VERSION; `npm run rescore` recomputes from stored facts.
 
-export const RUBRIC_VERSION = "3.3";
+export const RUBRIC_VERSION = "3.4";
 
 export const MACHINE_FORMATS = ["OWL", "OBO", "Turtle", "RDF", "JSON-LD", "LinkML", "JSON Schema", "SHACL", "YAML schema", "XSD"];
 export const SEMANTIC_FORMATS = ["OWL", "OBO", "Turtle", "RDF", "JSON-LD", "SHACL"];
@@ -71,7 +71,7 @@ export const PENALTY = {
   perYear: 4, graceYears: 1, timeCap: 20, status: 10, unknown: 5, inconsistent: 20, unsat: 5, perCritical: 3, criticalCap: 12, cap: 50, inconsistentCap: 54,
   robotErrors: [{ min: 100, pts: 10 }, { min: 10, pts: 6 }, { min: 1, pts: 3 }, { min: 0, pts: 0 }],
   formula: "min(50, inactivity + 10·[archived/legacy/OBO-inactive] + 20·[inconsistent] + 5·[unsatisfiable classes] + min(12, 3·critical pitfall types) + e(ROBOT errors)). Inconsistent ontologies are capped at 54 (grade D).",
-  how: "Problems are marked down, not just left unrewarded. Inactivity: after a one-year grace period every further year without public activity deducts 4 points (up to 20); archived, legacy or OBO-inactive resources lose a further 10; with no activity evidence at all, 5. Consistency: a logically inconsistent ontology loses 20 and can score no higher than 54 (grade D); one with unsatisfiable classes loses 5. Critical pitfalls (OOPS!, e.g. cycles in the class hierarchy, multiple domains/ranges, ambiguous namespace) cost 3 per pitfall type, up to 12. ROBOT report errors cost 3 (1–9), 6 (10–99) or 10 (≥ 100). The penalty is capped at 50 and the total never drops below 0.",
+  how: "Problems are marked down, not just left unrewarded. Inactivity: after a one-year grace period every further year without public activity deducts 4 points (up to 20); archived, legacy or OBO-inactive resources lose a further 10; with no activity evidence at all, 5. Consistency: a logically inconsistent ontology loses 20 and can score no higher than 54 (grade D); one with unsatisfiable classes loses 5. Critical pitfalls (OOPS!, e.g. cycles in the class hierarchy, multiple domains/ranges, ambiguous namespace) cost 3 per pitfall type, up to 12. ROBOT report errors cost 3 (1–9), 6 (10–99) or 10 (≥ 100) for OBO-style ontologies (the report checks OBO conventions). The penalty is capped at 50 and the total never drops below 0.",
 };
 
 export const FAIR_MAX = RUBRIC.filter((r) => r.fair).reduce((s, r) => s + r.max, 0);
@@ -276,7 +276,10 @@ export function scoreEntry(entry, facts) {
       pSteps.push({ label: "Critical pitfalls", pts: -pitP, detail: `${oopsF.critical} critical pitfall type${oopsF.critical === 1 ? "" : "s"}${codes ? ` (${codes})` : ""} × ${PENALTY.perCritical}${pitP === PENALTY.criticalCap ? " (capped)" : ""}` });
     }
     const rrF = (dash?.robot || quality?.robot) ?? null;
-    if (rrF?.ERROR) {
+    // ROBOT's report checks OBO conventions; only penalise ontologies that are meant to follow them.
+    const oboStyle = !!(entry.obo || dash);
+    if (rrF?.ERROR && !oboStyle) pSteps.push({ label: "ROBOT report errors", pts: 0, detail: `${rrF.ERROR} errors against OBO conventions; not penalised (not an OBO-style ontology)` });
+    if (rrF?.ERROR && oboStyle) {
       errP = PENALTY.robotErrors.find((t) => rrF.ERROR >= t.min).pts;
       pSteps.push({ label: "ROBOT report errors", pts: -errP, detail: `${rrF.ERROR} errors` });
     }
