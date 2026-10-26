@@ -87,3 +87,7 @@ Import the repository. `vercel.json` already sets the build command and output d
 ## SEO
 
 Every page has a canonical URL, Open Graph/Twitter cards and a JSON-LD `@graph`. The graph includes Organization, WebSite with SearchAction, BreadcrumbList, and, depending on the page, Dataset/DefinedTermSet, DataCatalog, ItemList or CollectionPage. The site also publishes `sitemap.xml`, `robots.txt`, a web manifest, `catalog.jsonld` (W3C DCAT), and per-entry PROV-O provenance in `/o/<id>/entry.json`.
+
+## License
+
+The NeuroSchema code and site are licensed under the [Apache License 2.0](LICENSE). Catalogued ontologies and schemas belong to their maintainers and keep their own licences, which are shown on each record.

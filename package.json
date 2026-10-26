@@ -1,6 +1,7 @@
 {
   "name": "neuroschema.org",
   "version": "1.0.0",
+  "license": "Apache-2.0",
   "private": true,
   "description": "Static catalog of neuroscience ontologies and schemas, with automated evaluation.",
   "type": "module",
