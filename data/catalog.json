@@ -46,7 +46,7 @@
       },
       {
         "name": "BIDS",
-        "url": "https://bids.neuroimaging.io/",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.BodyPartDetailsOntology",
         "note": "Example ontology for BodyPartDetailsOntology (microscopy)"
       }
     ],
@@ -544,7 +544,7 @@
       },
       {
         "name": "BIDS",
-        "url": "https://bids.neuroimaging.io/",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.CellType",
         "note": "Recommended vocabulary for the CellType metadata field"
       }
     ],
@@ -760,7 +760,7 @@
       },
       {
         "name": "BIDS",
-        "url": "https://bids.neuroimaging.io/",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.CogAtlasID",
         "note": "CogAtlasID task metadata field"
       }
     ],
@@ -801,7 +801,7 @@
       },
       {
         "name": "BIDS",
-        "url": "https://bids.neuroimaging.io/",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.CogPOID",
         "note": "CogPOID task metadata field"
       }
     ],
@@ -1301,23 +1301,23 @@
       },
       {
         "name": "NEMAR",
-        "url": "https://nemar.org/",
-        "note": "EEG/MEG/iEEG archive of BIDS datasets annotated with HED"
+        "url": "https://github.com/sccn/NEMAR-pipeline/blob/main/load_dataset.m",
+        "note": "EEG/MEG/iEEG archive; its pipeline imports each BIDS dataset with EEG-BIDS"
       },
       {
         "name": "EMBER Archive",
-        "url": "https://emberarchive.org/",
-        "note": "BIDS alongside NWB for multimodal brain-behaviour data"
+        "url": "https://github.com/brain-bbqs/study-template",
+        "note": "EMBER project template is a BIDS study dataset"
       },
       {
-        "name": "brainlife.io",
-        "url": "https://brainlife.io/",
-        "note": "BIDS import and export for cloud analyses"
+        "name": "brainlife.io (ezBIDS)",
+        "url": "https://github.com/brainlife/ezbids",
+        "note": "ezBIDS converts uploaded sessions to BIDS"
       },
       {
         "name": "Neurobagel",
-        "url": "https://neurobagel.org/",
-        "note": "Annotates BIDS participants.tsv for federated search"
+        "url": "https://neurobagel.org/user_guide/cli/#generate-a-bids-metadata-table",
+        "note": "bagel bids2tsv indexes BIDS datasets for federated search"
       }
     ],
     "tags": [
@@ -1535,7 +1535,7 @@
       },
       {
         "name": "BIDS",
-        "url": "https://bids.neuroimaging.io/",
+        "url": "https://bids-specification.readthedocs.io/en/stable/modality-specific-files/intracranial-electroencephalography.html#ieeg-recording-data",
         "note": "Accepted data format for iEEG recordings (.nwb)"
       }
     ],
@@ -2309,18 +2309,18 @@
     "usedBy": [
       {
         "name": "BIDS",
-        "url": "https://bids.neuroimaging.io/",
-        "note": "Required format for MRI and PET images"
+        "url": "https://bids-specification.readthedocs.io/en/stable/common-principles.html#nifti",
+        "note": "Imaging data SHOULD be stored as NIfTI"
       },
       {
         "name": "AFNI",
-        "url": "https://afni.nimh.nih.gov/",
-        "note": "Native image format"
+        "url": "https://github.com/afni/afni/tree/master/src/nifti",
+        "note": "Bundles the NIfTI C library; reads and writes NIfTI natively"
       },
       {
-        "name": "FSL",
-        "url": "https://fsl.fmrib.ox.ac.uk/",
-        "note": "Native image format"
+        "name": "SPM",
+        "url": "https://github.com/spm/spm/tree/main/@nifti",
+        "note": "@nifti class for NIfTI input and output"
       }
     ],
     "modules": [
@@ -2411,6 +2411,13 @@
       "HDF5",
       "metadata",
       "odML"
+    ],
+    "usedBy": [
+      {
+        "name": "Neo",
+        "url": "https://github.com/NeuralEnsemble/python-neo/blob/master/neo/io/nixio.py",
+        "note": "NixIO reads and writes NIX files"
+      }
     ]
   },
   {
