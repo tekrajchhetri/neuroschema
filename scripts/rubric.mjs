@@ -125,7 +125,9 @@ export function registries(entry, facts) {
 }
 
 export function lastActivity(facts) {
-  const dates = [facts.github?.pushedAt, facts.github?.latestRelease?.date, facts.ols?.releaseDate, facts.bioportal?.released, facts.links?.download?.lastModified, ...(facts.releases?.dates || []).slice(-1)].filter(Boolean);
+  const dates = [facts.github?.pushedAt, facts.github?.latestRelease?.date, facts.ols?.releaseDate, facts.bioportal?.released, facts.links?.download?.lastModified, ...(facts.releases?.dates || []).slice(-1)]
+    .filter((d) => d && !Number.isNaN(Date.parse(d)) && Date.parse(d) <= Date.now() + 864e5)
+    .map((d) => new Date(d).toISOString());
   return dates.length ? dates.sort().at(-1) : null;
 }
 
@@ -228,7 +230,8 @@ export function scoreEntry(entry, facts) {
 
   // M
   const last = lastActivity(facts);
-  const m = last ? monthsSince(last) : Infinity;
+  const m0 = last ? monthsSince(last) : Infinity;
+  const m = Number.isFinite(m0) && m0 >= 0 ? m0 : Infinity; // unparseable or future dates count as no evidence
   const rt = T.recency.find((s) => m <= s.upTo);
   add("maintenance", "Recency", rt.pts, 10, last ? `${last.slice(0, 10)} → ${m.toFixed(1)} months (${rt.label})` : "no activity evidence");
   const nRel = facts.releases?.lastYear ?? 0;
