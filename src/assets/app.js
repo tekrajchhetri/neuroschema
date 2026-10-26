@@ -54,6 +54,8 @@
       cards.sort(sorters[f.sort.value] || sorters.score).forEach((c) => grid.appendChild(c));
       count.textContent = `${n} of ${cards.length} resources`;
       empty.hidden = n > 0;
+      const sis = $("#sister-link");
+      if (sis && n === 0) sis.href = q.value.trim() ? `${sis.origin}/search/?q=${encodeURIComponent(q.value.trim())}` : `${sis.origin}/catalog/`;
       if (push) {
         const p = new URLSearchParams();
         if (q.value.trim()) p.set("q", q.value.trim());

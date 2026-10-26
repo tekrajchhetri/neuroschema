@@ -3,6 +3,7 @@
   const input = document.getElementById("search-q");
   const list = document.getElementById("results");
   const status = document.getElementById("search-status");
+  const SISTER = "https://schemascope.org";
   if (!input || !list) return;
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -70,7 +71,8 @@
     }
     status.innerHTML = results.length
       ? `<b>${results.length}</b> result${results.length === 1 ? "" : "s"} for “${esc(q.trim())}”`
-      : `No results for “${esc(q.trim())}”. Try fewer words, or <a href="/catalog/">browse the catalog</a>.`;
+      : `No results for “${esc(q.trim())}” in neuroscience. Try fewer words, <a href="/catalog/">browse the catalog</a>, or <a href="${SISTER}/search/?q=${encodeURIComponent(q.trim())}">search all domains on SchemaScope ↗</a>.`;
+    if (results.length) status.innerHTML += ` · <a href="${SISTER}/search/?q=${encodeURIComponent(q.trim())}">Search other domains on SchemaScope ↗</a>`;
     list.innerHTML = results
       .map(({ e }) => {
         const mods = e.modules.filter((m) => norm(q).split(/\s+/).some((t) => t.length > 2 && norm(m).includes(t)));

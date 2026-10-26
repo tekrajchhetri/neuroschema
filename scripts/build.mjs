@@ -236,6 +236,7 @@ function page({ title, description, pathname, body, graph = [], noindex = false,
   const desc = description || config.description;
   const canonical = abs(pathname);
   const ld = { "@context": "https://schema.org", "@graph": [...baseGraph(), ...graph] };
+  const SIS = config.sister;
   const nav = (href, label) => `<a href="${href}"${pathname.startsWith(href) ? ' aria-current="page"' : ""}>${label}</a>`;
   return `<!doctype html>
 <html lang="en">
@@ -288,6 +289,7 @@ ${gtmBody}
       ${nav("/evaluation/", "Evaluation")}
       ${nav("/submit/", "Submit")}
       ${nav("/about/", "About")}
+      ${SIS ? `<a class="nav-ext" href="${attr(SIS.url)}" title="Ontologies for every other domain, on ${esc(SIS.name)}">Other domains <span aria-hidden="true">↗</span></a>` : ""}
       <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
       </button>
@@ -308,6 +310,7 @@ ${body}
       <a href="/catalog.json">catalog.json</a>
       <a href="/catalog.jsonld">DCAT JSON-LD</a>
       ${config.repository ? `<a href="${attr(config.repository)}">GitHub</a>` : ""}
+      ${SIS ? `<a href="${attr(SIS.url)}">${esc(SIS.name)}: all domains ↗</a>` : ""}
       <a href="/privacy/">Privacy</a>
       ${GTM ? `<a href="#" data-consent-open>Cookie settings</a>` : ""}
     </nav>
@@ -450,7 +453,14 @@ function homePage() {
 
 <section class="wrap section browse-all"><a class="btn" href="/catalog/">Browse the full catalog</a> <a class="btn-ghost" href="/evaluation/">How we score</a></section>
 
-<section class="wrap section cta">
+${config.sister ? `<section class="wrap section sister">
+  <div class="sister-inner">
+    <div><p class="eyebrow">Beyond neuroscience</p><h2>Looking for another domain?</h2><p class="muted">NeuroSchema covers neuroscience. For ontologies and schemas in every other field, from life sciences, chemistry and earth science to engineering, privacy, law and computing, use our sister catalog ${esc(config.sister.name)}. It is scored with the same rubric.</p></div>
+    <a class="btn" href="${attr(config.sister.url)}">Explore ${esc(config.sister.name)} ↗</a>
+  </div>
+</section>
+
+` : ""}<section class="wrap section cta">
   <div class="cta-inner">
     <div><h2>Missing a schema or ontology?</h2><p class="muted">Submit it through GitHub. Every addition is reviewed, validated and evaluated automatically before it is merged.</p></div>
     <a class="btn" href="/submit/">Submit a resource</a>
@@ -494,7 +504,7 @@ function catalogPage() {
   </div>
   <p class="muted small" id="count" aria-live="polite">${catalog.length} resources</p>
   <div class="cards" id="cards">${sorted.map(card).join("")}</div>
-  <p class="empty" id="empty" hidden>No resources match. <button type="button" class="link" id="f-reset2">Clear filters</button></p>
+  <p class="empty" id="empty" hidden>No resources match. <button type="button" class="link" id="f-reset2">Clear filters</button>${config.sister ? `, or <a href="${attr(config.sister.url)}/catalog/" id="sister-link">search all domains on ${esc(config.sister.name)} ↗</a>` : ""}</p>
 </section>`;
   const description = `All ${catalog.length} neuroscience ontologies, schemas, vocabularies and data standards in NeuroSchema, with FAIR scores, versions and adoption.`;
   return page({ title: "Catalog", pathname: "/catalog/", body, description, graph: [webPage("CollectionPage", "/catalog/", "Catalog", description), catalogLd(sorted), breadcrumbs(trail)] });

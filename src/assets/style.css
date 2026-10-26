@@ -439,3 +439,14 @@ mark { background: var(--gold-soft); color: inherit; border-radius: 3px; padding
 .consent[hidden] { display: none; }
 .consent p { margin: 0; font-size: .9rem; flex: 1 1 360px; }
 .consent-actions { display: flex; gap: 8px; }
+
+/* Sister catalog (SchemaScope) */
+.nav a.nav-ext { color: var(--gold, currentColor); white-space: nowrap; }
+.sister-inner { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; padding: 28px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); }
+.sister-inner h2 { margin: 0 0 4px; }
+.sister-inner p { margin: 0; max-width: 62ch; }
+.sister-inner .eyebrow { margin-bottom: 6px; }
+.nav a.nav-ext { color: var(--gold-ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nav a.nav-ext { color: var(--gold); } }
+:root[data-theme="dark"] .nav a.nav-ext { color: var(--gold); }
+@media (max-width: 640px) { .nav a.nav-ext { display: none; } }
