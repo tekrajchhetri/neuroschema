@@ -3,7 +3,7 @@
   "url": "https://neuroschema.org",
   "tagline": "Neuroscience ontologies, schemas & standards",
   "description": "A curated, automatically evaluated catalog of neuroscience ontologies, schemas, vocabularies and data standards.",
-  "repository": null,
+  "repository": "https://github.com/tekrajchhetri/neuroschema",
   "gtmId": "GTM-KR77M7HS",
   "sister": {
     "name": "SchemaScope",
