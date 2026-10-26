@@ -71,5 +71,6 @@ if (problems.length) await fail(`The entry has problems:\n${problems.map((p) => 
 await writeFile(catalogPath, JSON.stringify(catalog, null, 2) + "\n");
 await out("id", entry.id);
 await out("mode", mode);
-await out("summary", `${mode === "add" ? "Add" : "Update"} ${entry.acronym || entry.name} (\`${entry.id}\`)`);
+const saved = catalog.find((e) => e.id === entry.id);
+await out("summary", `${mode === "add" ? "Add" : "Update"} ${saved.acronym || saved.name} (\`${entry.id}\`)`);
 console.log(`${mode}: ${entry.id}`);

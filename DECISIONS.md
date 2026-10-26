@@ -108,3 +108,9 @@
 **Decision** – Add `sister` to `site.config.json` (SchemaScope, https://schemascope.org) and link to it from the header ("Other domains ↗", hidden on phones), a home-page callout, the footer, the empty catalog state, and the search page (forwarding the query to SchemaScope's search). `vercel.json` adds `/schemascope` and `/other-domains` redirects.
 **Why** – SchemaScope covers every domain with the same rubric, so it's the natural place to send people. Plain links keep the visitor in control; a forced redirect was rejected because neuroscience pages must stay on NeuroSchema.
 **Consequences** – Removing `sister` from the config removes every link. Redirects are temporary (307) so they can change.
+
+## D-017: Submission bot doesn't depend on the label existing   (2026-10-26, status: accepted)
+**Context** – `.github/workflows/submission.yml` only ran for issues labelled `submission`. The issue form (`.github/ISSUE_TEMPLATE/add-resource.yml`) adds that label, but GitHub silently drops a template label that doesn't exist in the repo, so submissions were skipped.
+**Decision** – The job also runs when the issue body contains the form's `### Catalog entry (JSON)` field. Its first step creates the `submission` label if missing and adds it to the issue, using `GITHUB_TOKEN` so the label doesn't start the workflow again. The PR title for a correction now uses the saved entry's name.
+**Why** – A new repo or fork works without manual label setup. Rejected: documenting "create the label first", which is easy to miss.
+**Consequences** – Nothing to migrate. Existing unlabelled submission issues are picked up on their next edit.
