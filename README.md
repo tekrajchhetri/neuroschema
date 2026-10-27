@@ -48,7 +48,7 @@ Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scri
 - Bioregistry (cross-portal IDs, dependencies, reuse)
 - OBO Foundry registry and OBO Dashboard (principle checks, ROBOT report, consistency, reuse)
 - Crossref
-- `scripts/quality.mjs` in CI: ROBOT ELK reasoning and report for ontologies outside the OBO Dashboard, plus the OOPS! pitfall scanner
+- `scripts/quality.mjs` in CI: ROBOT ELK reasoning and report for every ontology (the OBO Dashboard's results are shown for comparison), plus the OOPS! pitfall scanner
 
 **Versions and provenance.** Each run records the exact version evaluated: the version IRI/info in the artefact, or else the OLS version, release tag or commit. Every fact stores its source URL and retrieval time. Runs are archived, unchanged, in `data/runs/`, which feeds the per-entry history. Failed lookups carry forward the last good value, flagged.
 
