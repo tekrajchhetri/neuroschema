@@ -16,24 +16,25 @@ docker build -t neuroschema/oops docker/oops     # OOPS! pitfall scanner, built 
 OOPS_IMAGE=neuroschema/oops ROBOT_JAR=robot.jar node scripts/quality.mjs   # quality checks; CI runs this weekly
 python3 scripts/pitfalls.py scan ontology.owl   # Python pitfall scan (fallback when OOPS! can't run)
 npm run rescore           # recompute scores from stored facts after a rubric change (no network)
+npm run quality:all       # ROBOT, pitfalls and imports read from the file, for every ontology; resumable
 ```
 
 Requires Node ≥ 18. There's nothing to `npm install`. Set `GITHUB_TOKEN` locally to avoid GitHub's 60 requests/hour limit when running `npm run evaluate`.
 
-## How scoring works (rubric v3, deliberately strict)
+## How scoring works (rubric v4, deliberately strict)
 
-`Score = max(0, 100 · (F + A + I + R + Q + M + U) / possible − P)`. Here `possible` is 100 for ontologies and 80 for everything else, because Q only applies to ontologies.
+`Score = max(0, 100 · (F + A + I + R + Q + M + U) / possible − P)`. Here `possible` is 100 for ontologies and 80 for everything else, because Q only applies to ontologies. Q checks NeuroSchema couldn't run (no retrievable file, file too large, tool timed out) are left out of `possible` too, and such grades are marked with *.
 
 | | Criterion | Max | Measures |
 |---|---|---|---|
-| F | Findable | 12 | PID, number of portals/registries indexing it, citable reference |
-| A | Accessible | 12 | homepage, artefact over HTTP(S), metadata persists in a registry |
+| F | Findable | 12 | PID, number of portals/registries indexing it (incl. LOV), citable reference |
+| A | Accessible | 12 | homepage, artefact over HTTP(S), metadata persists in any registry |
 | I | Interoperable | 12 | formal format, semantic-web IRIs, imports other vocabularies |
-| R | Reusable | 12 | open license, version declared *inside* the artefact, OBO principles pass rate |
-| Q | Ontology consistency & quality | 20 | **logical consistency (10)**, OWL 2 DL, BFO/COB + RO, ROBOT report, critical pitfalls |
+| R | Reusable | 12 | open license, version declared *inside* the artefact, OBO principles pass rate or a FAIRsharing listing |
+| Q | Ontology consistency & quality | 20 | **logical consistency (10)**, OWL 2 DL, BFO/COB + RO, ROBOT report (OBO-style ontologies only), critical pitfalls |
 | M | Maintenance | 16 | recency + releases in the last 12 months |
 | U | Adoption | 16 | adopting projects, reuse by other ontologies, stars/citations |
-| P | Penalties | −50 | inactivity (−4/year after 1 year, max −20; −10 if archived/legacy/OBO-inactive), inconsistent −20 (score capped at 54), unsatisfiable classes −5, critical pitfalls −3 each (max −12), ROBOT errors up to −10 |
+| P | Penalties | −50 | inactivity (−4/year after 1 year, max −20; −10 if archived/legacy/OBO-inactive), inconsistent −20 (score capped at 54), critical pitfalls −3 each (max −12); unsatisfiable classes and ROBOT errors only cost Q points |
 
 Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scripts/rubric.mjs`](scripts/rubric.mjs).
 
