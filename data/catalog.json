@@ -43,6 +43,11 @@
         "name": "BICAN",
         "url": "https://www.portal.brain-bican.org/",
         "note": "Brain region annotation"
+      },
+      {
+        "name": "BIDS",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.BodyPartDetailsOntology",
+        "note": "Example ontology for BodyPartDetailsOntology (microscopy)"
       }
     ],
     "tags": [
@@ -536,6 +541,11 @@
         "name": "BICAN",
         "url": "https://www.portal.brain-bican.org/",
         "note": "Brain cell types"
+      },
+      {
+        "name": "BIDS",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.CellType",
+        "note": "Recommended vocabulary for the CellType metadata field"
       }
     ],
     "tags": [
@@ -747,6 +757,11 @@
         "name": "NeuroVault",
         "url": "https://neurovault.org/",
         "note": "Tagging statistical maps with cognitive tasks"
+      },
+      {
+        "name": "BIDS",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.CogAtlasID",
+        "note": "CogAtlasID task metadata field"
       }
     ],
     "tags": [
@@ -783,6 +798,11 @@
         "name": "BrainMap",
         "url": "https://www.brainmap.org/",
         "note": "Experiment coding scheme"
+      },
+      {
+        "name": "BIDS",
+        "url": "https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.metadata.CogPOID",
+        "note": "CogPOID task metadata field"
       }
     ],
     "tags": [
@@ -1182,10 +1202,11 @@
     "name": "Brain Imaging Data Structure",
     "category": "imaging",
     "kind": "data-standard",
-    "description": "A community standard for organising and describing neuroimaging and related data (MRI, EEG, MEG, iEEG, PET, microscopy, and more). Its rules are published as a machine-readable YAML schema.",
+    "description": "A community standard for organising and describing neuroimaging and related data: MRI, EEG, MEG, iEEG, PET, microscopy, NIRS, motion, MRS, EMG, eye tracking, and derivatives such as atlases. Its rules are a machine-readable YAML schema, also exported as one JSON file, that renders the specification and drives the BIDS Validator. Metadata fields point to HED, Cognitive Atlas, CogPO, the Cell Ontology, NCBI Taxonomy and RRIDs.",
     "formats": [
       "YAML schema",
-      "JSON"
+      "JSON",
+      "TSV"
     ],
     "species": [
       "Human",
@@ -1200,6 +1221,66 @@
         "title": "The brain imaging data structure, a format for organizing and describing outputs of neuroimaging experiments",
         "doi": "10.1038/sdata.2016.44",
         "year": 2016
+      },
+      {
+        "title": "The past, present, and future of the brain imaging data structure (BIDS)",
+        "doi": "10.1162/imag_a_00103",
+        "year": 2024
+      },
+      {
+        "title": "EEG-BIDS, an extension to the brain imaging data structure for electroencephalography",
+        "doi": "10.1038/s41597-019-0104-8",
+        "year": 2019
+      },
+      {
+        "title": "iEEG-BIDS, extending the Brain Imaging Data Structure specification to human intracranial electrophysiology",
+        "doi": "10.1038/s41597-019-0105-7",
+        "year": 2019
+      },
+      {
+        "title": "MEG-BIDS, the brain imaging data structure extended to magnetoencephalography",
+        "doi": "10.1038/sdata.2018.110",
+        "year": 2018
+      },
+      {
+        "title": "PET-BIDS, an extension to the brain imaging data structure for positron emission tomography",
+        "doi": "10.1038/s41597-022-01164-1",
+        "year": 2022
+      },
+      {
+        "title": "The genetics-BIDS extension: Easing the search for genetic data associated with human brain imaging",
+        "doi": "10.1093/gigascience/giaa104",
+        "year": 2020
+      },
+      {
+        "title": "Microscopy-BIDS: An Extension to the Brain Imaging Data Structure for Microscopy Data",
+        "doi": "10.3389/fnins.2022.871228",
+        "year": 2022
+      },
+      {
+        "title": "qMRI-BIDS: An extension to the brain imaging data structure for quantitative magnetic resonance imaging data",
+        "doi": "10.1038/s41597-022-01571-4",
+        "year": 2022
+      },
+      {
+        "title": "ASL-BIDS, the brain imaging data structure extension for arterial spin labeling",
+        "doi": "10.1038/s41597-022-01615-9",
+        "year": 2022
+      },
+      {
+        "title": "NIRS-BIDS: Brain Imaging Data Structure Extended to Near-Infrared Spectroscopy",
+        "doi": "10.1038/s41597-024-04136-9",
+        "year": 2025
+      },
+      {
+        "title": "Motion-BIDS: an extension to the brain imaging data structure to organize motion data for reproducible research",
+        "doi": "10.1038/s41597-024-03559-8",
+        "year": 2024
+      },
+      {
+        "title": "MRS-BIDS, an extension to the Brain Imaging Data Structure for magnetic resonance spectroscopy",
+        "doi": "10.1038/s41597-025-05543-2",
+        "year": 2025
       }
     ],
     "usedBy": [
@@ -1217,13 +1298,83 @@
         "name": "MNE-BIDS",
         "url": "https://mne.tools/mne-bids/",
         "note": "EEG/MEG BIDS conversion"
+      },
+      {
+        "name": "NEMAR",
+        "url": "https://github.com/sccn/NEMAR-pipeline/blob/main/load_dataset.m",
+        "note": "EEG/MEG/iEEG archive; its pipeline imports each BIDS dataset with EEG-BIDS"
+      },
+      {
+        "name": "EMBER Archive",
+        "url": "https://github.com/brain-bbqs/study-template",
+        "note": "EMBER project template is a BIDS study dataset"
+      },
+      {
+        "name": "brainlife.io (ezBIDS)",
+        "url": "https://github.com/brainlife/ezbids",
+        "note": "ezBIDS converts uploaded sessions to BIDS"
+      },
+      {
+        "name": "Neurobagel",
+        "url": "https://neurobagel.org/user_guide/cli/#generate-a-bids-metadata-table",
+        "note": "bagel bids2tsv indexes BIDS datasets for federated search"
       }
     ],
     "tags": [
       "MRI",
       "EEG",
       "MEG",
-      "data organisation"
+      "iEEG",
+      "PET",
+      "microscopy",
+      "NIRS",
+      "data organisation",
+      "YAML schema"
+    ],
+    "download": "https://bids-specification.readthedocs.io/en/stable/schema.json",
+    "modules": [
+      {
+        "name": "BIDS schema (YAML source)",
+        "url": "https://github.com/bids-standard/bids-specification/tree/master/src/schema",
+        "note": "Objects (entities, metadata, columns, suffixes, extensions) and rules, including expression-based checks"
+      },
+      {
+        "name": "BIDS Extension Proposals",
+        "url": "https://bids.neuroimaging.io/extensions/index.html",
+        "note": "Index of BEPs, for example BEP028 provenance, BEP032 microelectrode electrophysiology and BEP044 stimuli"
+      },
+      {
+        "name": "BIDS-Prov (BEP028)",
+        "url": "https://github.com/bids-standard/BEP028_BIDSprov",
+        "note": "Provenance of BIDS derivatives as W3C PROV in JSON-LD"
+      },
+      {
+        "name": "BIDS Stats Models",
+        "url": "https://github.com/bids-standard/stats-models",
+        "note": "Pydantic-defined specification of statistical models over BIDS datasets"
+      },
+      {
+        "name": "BIDS 2.0",
+        "url": "https://github.com/bids-standard/bids-2-devel",
+        "note": "Backwards-incompatible changes proposed for the next major version"
+      }
+    ],
+    "tools": [
+      {
+        "name": "BIDS Validator",
+        "url": "https://github.com/bids-standard/bids-validator",
+        "note": "Schema-driven dataset validator"
+      },
+      {
+        "name": "bidsschematools",
+        "url": "https://pypi.org/project/bidsschematools/",
+        "note": "Python package to load, render and export the schema"
+      },
+      {
+        "name": "PyBIDS",
+        "url": "https://github.com/bids-standard/pybids",
+        "note": "Python library for querying BIDS datasets"
+      }
     ]
   },
   {
@@ -1381,6 +1532,11 @@
         "name": "SpikeInterface",
         "url": "https://spikeinterface.readthedocs.io/",
         "note": "Read/write support"
+      },
+      {
+        "name": "BIDS",
+        "url": "https://bids-specification.readthedocs.io/en/stable/modality-specific-files/intracranial-electroencephalography.html#ieeg-recording-data",
+        "note": "Accepted data format for iEEG recordings (.nwb)"
       }
     ],
     "tags": [
@@ -1388,6 +1544,40 @@
       "ophys",
       "behavior",
       "HDF5"
+    ],
+    "modules": [
+      {
+        "name": "HDMF common schema",
+        "url": "https://github.com/hdmf-dev/hdmf-common-schema",
+        "note": "Shared data types (tables, containers) that the NWB schema builds on"
+      },
+      {
+        "name": "HERD",
+        "url": "https://github.com/hdmf-dev/hdmf-common-schema/blob/main/common/resources.yaml",
+        "note": "HDMF External Resources Data: links values in a file to ontology terms"
+      },
+      {
+        "name": "NDX Catalog",
+        "url": "https://nwb-extensions.github.io/",
+        "note": "Community registry of neurodata extensions"
+      }
+    ],
+    "tools": [
+      {
+        "name": "PyNWB",
+        "url": "https://github.com/NeurodataWithoutBorders/pynwb",
+        "note": "Python API"
+      },
+      {
+        "name": "MatNWB",
+        "url": "https://github.com/NeurodataWithoutBorders/matnwb",
+        "note": "MATLAB API"
+      },
+      {
+        "name": "NWB Inspector",
+        "url": "https://github.com/NeurodataWithoutBorders/nwbinspector",
+        "note": "Best-practice checks, used by DANDI on upload"
+      }
     ]
   },
   {
@@ -2094,6 +2284,229 @@
       "addiction",
       "behaviour",
       "psychiatry"
+    ]
+  },
+  {
+    "id": "nifti",
+    "acronym": "NIfTI",
+    "name": "Neuroimaging Informatics Technology Initiative format",
+    "category": "imaging",
+    "kind": "data-standard",
+    "description": "The standard file format for volumetric neuroimaging data. A fixed binary header (NIfTI-1, or NIfTI-2 for large dimensions) carries voxel-to-world affines (qform/sform), units, intent codes and extensions, followed by the image array. Defined by the NIfTI Data Format Working Group; CIFTI-2 builds on NIfTI-2 for grayordinate data.",
+    "formats": [
+      "NIfTI-1",
+      "NIfTI-2"
+    ],
+    "species": [
+      "Human",
+      "Multi-species"
+    ],
+    "maintainer": "NIfTI Data Format Working Group",
+    "license": "Public domain",
+    "homepage": "https://nifti.nimh.nih.gov/",
+    "repository": "https://github.com/NIFTI-Imaging/nifti_clib",
+    "publications": [],
+    "usedBy": [
+      {
+        "name": "BIDS",
+        "url": "https://bids-specification.readthedocs.io/en/stable/common-principles.html#nifti",
+        "note": "Imaging data SHOULD be stored as NIfTI"
+      },
+      {
+        "name": "AFNI",
+        "url": "https://github.com/afni/afni/tree/master/src/nifti",
+        "note": "Bundles the NIfTI C library; reads and writes NIfTI natively"
+      },
+      {
+        "name": "SPM",
+        "url": "https://github.com/spm/spm/tree/main/@nifti",
+        "note": "@nifti class for NIfTI input and output"
+      }
+    ],
+    "modules": [
+      {
+        "name": "nifti1.h",
+        "url": "https://github.com/NIFTI-Imaging/nifti_clib/blob/master/niftilib/nifti1.h",
+        "note": "Normative NIfTI-1 header definition"
+      },
+      {
+        "name": "nifti2.h",
+        "url": "https://github.com/NIFTI-Imaging/nifti_clib/blob/master/nifti2/nifti2.h",
+        "note": "NIfTI-2 header definition (64-bit dimensions)"
+      }
+    ],
+    "tools": [
+      {
+        "name": "NiBabel",
+        "url": "https://nipy.org/nibabel/",
+        "note": "Python read and write"
+      },
+      {
+        "name": "dcm2niix",
+        "url": "https://github.com/rordenlab/dcm2niix",
+        "note": "DICOM to NIfTI conversion"
+      }
+    ],
+    "tags": [
+      "MRI",
+      "PET",
+      "file format",
+      "volumetric images"
+    ]
+  },
+  {
+    "id": "psych-ds",
+    "acronym": "Psych-DS",
+    "name": "Psych-DS",
+    "category": "behavior",
+    "kind": "data-standard",
+    "description": "A BIDS-inspired standard for organising datasets from psychological and behavioural research (experiments, surveys, assessments): CSV data files with keyword-formatted names and dataset metadata in schema.org JSON-LD. What counts as valid is defined by a versioned YAML schema model that the Psych-DS validators read.",
+    "formats": [
+      "YAML schema",
+      "JSON-LD",
+      "CSV"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Psych-DS community",
+    "license": "CC BY 4.0",
+    "homepage": "https://psychds-docs.readthedocs.io/",
+    "repository": "https://github.com/psych-ds/psych-DS",
+    "publications": [],
+    "tags": [
+      "behaviour",
+      "psychology",
+      "schema.org",
+      "data organisation"
+    ]
+  },
+  {
+    "id": "nix",
+    "acronym": "NIX",
+    "name": "Neuroscience Information Exchange format",
+    "category": "physiology",
+    "kind": "data-standard",
+    "description": "A generic data model and HDF5-based file format, started in the INCF Electrophysiology Task Force, that stores neuroscience data (time series, images, events, regions of interest) together with their metadata in one container. Metadata follow the odML model, and Neo reads and writes NIX files.",
+    "formats": [
+      "HDF5"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "German Neuroinformatics Node (G-Node)",
+    "license": "BSD-3-Clause",
+    "homepage": "https://nixio.readthedocs.io/",
+    "repository": "https://github.com/G-Node/nix",
+    "publications": [],
+    "tools": [
+      {
+        "name": "nixpy",
+        "url": "https://github.com/G-Node/nixpy",
+        "note": "Python bindings (nixio on PyPI)"
+      }
+    ],
+    "tags": [
+      "electrophysiology",
+      "HDF5",
+      "metadata",
+      "odML"
+    ],
+    "usedBy": [
+      {
+        "name": "Neo",
+        "url": "https://github.com/NeuralEnsemble/python-neo/blob/master/neo/io/nixio.py",
+        "note": "NixIO reads and writes NIX files"
+      }
+    ]
+  },
+  {
+    "id": "neurobagel",
+    "acronym": "Neurobagel",
+    "name": "Neurobagel data model and vocabulary",
+    "category": "metadata",
+    "kind": "vocabulary",
+    "description": "An RDF vocabulary (nb:) and a JSON Schema for data dictionaries that harmonise participant-level metadata (age, sex, diagnosis, assessments, imaging modality, processing pipelines) by annotating BIDS participants.tsv columns with SNOMED CT, NCIt and NIDM terms. The resulting graphs power Neurobagel's federated search across datasets.",
+    "formats": [
+      "JSON Schema",
+      "JSON-LD",
+      "RDF"
+    ],
+    "species": [
+      "Human"
+    ],
+    "maintainer": "Neurobagel project (Origami Lab, McGill University)",
+    "license": "MIT",
+    "homepage": "https://neurobagel.org/",
+    "repository": "https://github.com/neurobagel/documentation",
+    "publications": [],
+    "modules": [
+      {
+        "name": "Data dictionaries",
+        "url": "https://neurobagel.org/data_models/dictionaries/",
+        "note": "JSON Schema extending BIDS participants.json"
+      },
+      {
+        "name": "Term naming standards",
+        "url": "https://neurobagel.org/data_models/term_naming_standards/",
+        "note": "nb: namespace and the external vocabularies it reuses"
+      }
+    ],
+    "tools": [
+      {
+        "name": "bagel-cli",
+        "url": "https://github.com/neurobagel/bagel-cli",
+        "note": "Turns annotated BIDS datasets into graph-ready JSON-LD"
+      },
+      {
+        "name": "Annotation tool",
+        "url": "https://annotate.neurobagel.org/",
+        "note": "Web app that writes Neurobagel data dictionaries"
+      },
+      {
+        "name": "Query tool",
+        "url": "https://query.neurobagel.org/",
+        "note": "Federated cross-dataset search"
+      }
+    ],
+    "tags": [
+      "phenotype",
+      "harmonisation",
+      "federated search",
+      "BIDS",
+      "SNOMED CT"
+    ]
+  },
+  {
+    "id": "neuroblueprint",
+    "acronym": "NeuroBlueprint",
+    "name": "NeuroBlueprint",
+    "category": "physiology",
+    "kind": "data-standard",
+    "description": "A lightweight, BIDS-inspired specification for organising systems-neuroscience project folders by subject, session and datatype (ephys, behav, funcimg, anat) from acquisition onward. Developed by the Neuroinformatics Unit at the Sainsbury Wellcome Centre and implemented by datashuttle.",
+    "formats": [
+      "Folder layout"
+    ],
+    "species": [
+      "Multi-species"
+    ],
+    "maintainer": "Neuroinformatics Unit, Sainsbury Wellcome Centre",
+    "license": "CC BY 4.0",
+    "homepage": "https://neuroblueprint.neuroinformatics.dev/",
+    "repository": "https://github.com/neuroinformatics-unit/NeuroBlueprint",
+    "publications": [],
+    "tools": [
+      {
+        "name": "datashuttle",
+        "url": "https://datashuttle.neuroinformatics.dev/",
+        "note": "Creates, validates and transfers NeuroBlueprint folder trees"
+      }
+    ],
+    "tags": [
+      "data organisation",
+      "electrophysiology",
+      "behaviour",
+      "BIDS-inspired"
     ]
   }
 ]
