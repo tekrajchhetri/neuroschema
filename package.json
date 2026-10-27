@@ -18,6 +18,7 @@
     "evaluate": "node scripts/evaluate.mjs",
     "rescore": "node scripts/rescore.mjs",
     "images": "docker build -q -t neuroschema/oops docker/oops && docker build -q -t neuroschema/robot docker/robot",
-    "refresh": "scripts/refresh.sh"
+    "refresh": "scripts/refresh.sh",
+    "quality:all": "scripts/quality-all.sh"
   }
 }

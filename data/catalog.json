@@ -123,7 +123,7 @@
       "brain regions",
       "mouse"
     ],
-    "download": "https://purl.brain-bican.org/ontology/mbao/mbao.owl"
+    "download": "https://raw.githubusercontent.com/brain-bican/mouse_brain_atlas_ontology/main/mbao.owl"
   },
   {
     "id": "dmba",
@@ -157,7 +157,7 @@
       "development",
       "mouse"
     ],
-    "download": "https://purl.brain-bican.org/ontology/dmbao/dmbao.owl"
+    "download": "https://raw.githubusercontent.com/brain-bican/developing_mouse_brain_atlas_ontology/main/dmbao.owl"
   },
   {
     "id": "hba",
@@ -190,7 +190,7 @@
       "brain regions",
       "human"
     ],
-    "download": "https://purl.brain-bican.org/ontology/hbao/hbao.owl"
+    "download": "https://raw.githubusercontent.com/brain-bican/human_brain_atlas_ontology/main/hbao.owl"
   },
   {
     "id": "dhba",
@@ -224,7 +224,7 @@
       "development",
       "human"
     ],
-    "download": "https://purl.brain-bican.org/ontology/dhbao/dhbao.owl"
+    "download": "https://raw.githubusercontent.com/brain-bican/developing_human_brain_atlas_ontology/main/dhbao.owl"
   },
   {
     "id": "neuronames",
