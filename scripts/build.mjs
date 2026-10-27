@@ -90,7 +90,8 @@ const logo = (cls = "") =>
 function gradeBadge(e, size = "") {
   const r = ev(e.id);
   if (!r) return `<span class="grade grade-none ${size}" title="Not evaluated yet">–</span>`;
-  return `<span class="grade grade-${r.grade} ${size}" title="Evaluation score ${r.score}/100"><b>${r.grade}</b><small>${r.score}</small></span>`;
+  const partial = r.qualityPartial ? `; quality partially assessed (${r.qualityNotAssessed} of 20 Q points could not be checked)` : "";
+  return `<span class="grade grade-${r.grade} ${size}" title="Evaluation score ${r.score}/100${partial}"><b>${r.grade}</b><small>${r.score}</small>${r.qualityPartial ? '<sup class="q-partial" aria-label="quality partially assessed">*</sup>' : ""}</span>`;
 }
 const versionLabel = (r) => r?.evaluatedVersion?.label || null;
 
@@ -113,8 +114,54 @@ for (const run of runs) {
       links: Object.fromEntries(Object.entries(r.links || {}).filter(([, l]) => l).map(([k, l]) => [k, l.state])),
       archived: r.github?.archived || false,
       rubric: run.run.evaluator?.rubricVersion,
+      // Per-criterion points and the quality metrics behind them, to compare runs.
+      crit: Object.fromEntries(Object.entries(r.breakdown || {}).map(([k, b]) => [k, b.score])),
+      penalty: r.penalty?.score ?? null,
+      metrics: {
+        consistent: (r.quality && !r.quality.error ? r.quality.consistent : null) ?? r.dashboard?.consistent ?? null,
+        unsatisfiable: (r.quality && !r.quality.error ? r.quality.unsatisfiable : null) ?? r.dashboard?.unsatisfiable ?? null,
+        owl2dl: (r.quality && !r.quality.error ? r.quality.owl2dl : null) ?? r.dashboard?.owl2dl ?? null,
+        robotErrors: (r.quality?.robot || r.dashboard?.robot)?.ERROR ?? null,
+        robotWarnings: (r.quality?.robot || r.dashboard?.robot)?.WARN ?? null,
+        criticalPitfalls: r.oops && !r.oops.error ? r.oops.critical ?? null : null,
+        imports: r.importCount ?? null,
+        reuse: r.reuseCount ?? null,
+      },
     });
   }
+}
+
+const CRIT_LABELS = [["findable", "Findable"], ["accessible", "Accessible"], ["interoperable", "Interoperable"], ["reusable", "Reusable"], ["quality", "Quality"], ["maintenance", "Maintenance"], ["adoption", "Adoption"]];
+const METRIC_LABELS = [["consistent", "Logically consistent"], ["unsatisfiable", "Unsatisfiable classes"], ["owl2dl", "In OWL 2 DL"], ["robotErrors", "ROBOT errors"], ["robotWarnings", "ROBOT warnings"], ["criticalPitfalls", "Critical pitfalls"], ["imports", "Imported vocabularies"], ["reuse", "Reused by"]];
+const fmtMetric = (v) => (v === true ? "yes" : v === false ? "no" : v == null ? "—" : fmtNum(v));
+
+// Metrics across runs: one column per run (newest first), a row per criterion and quality metric; changed cells are marked.
+function metricsAcrossRuns(h) {
+  const runs = [...h].reverse().slice(0, 8);
+  if (runs.length < 2) return "";
+  const LOWER_BETTER = new Set(["Unsatisfiable classes", "ROBOT errors", "ROBOT warnings", "Critical pitfalls"]);
+  const row = (label, get, fmt = fmtMetric) => {
+    const vals = runs.map(get);
+    if (vals.every((v) => v == null)) return "";
+    return `<tr><th scope="row">${esc(label)}</th>${vals.map((v, i) => {
+      const older = vals[i + 1];
+      const changed = older != null && v != null && older !== v;
+      // "up" = better, "down" = worse (for errors and pitfalls, fewer is better); yes/no changes just get marked.
+      const better = typeof v === "number" && typeof older === "number" ? (v > older) !== LOWER_BETTER.has(label) : typeof v === "boolean" ? v : null;
+      const dir = better == null ? "" : better ? " up" : " down";
+      return `<td class="num${changed ? ` changed${dir}` : ""}"${changed ? ` title="was ${attr(fmt(older))}"` : ""}>${esc(fmt(v))}</td>`;
+    }).join("")}</tr>`;
+  };
+  return `<details class="metrics-runs"${runs.some((p, i) => i && JSON.stringify([p.crit, p.metrics]) !== JSON.stringify([runs[i - 1].crit, runs[i - 1].metrics])) ? " open" : ""}>
+    <summary>Metrics across runs</summary>
+    <div class="table-wrap"><table class="hist-table metrics-table"><thead><tr><th></th>${runs.map((p) => `<th class="num"><a href="/runs/${attr(p.runId)}.json">${esc(fmtDate(p.at))}</a><br><span class="muted">rubric v${esc(p.rubric || "?")}</span></th>`).join("")}</tr></thead><tbody>
+      ${row("Score", (p) => p.score)}
+      ${CRIT_LABELS.map(([k, label]) => row(label, (p) => p.crit?.[k] ?? null)).join("")}
+      ${row("Penalty", (p) => p.penalty)}
+      ${METRIC_LABELS.map(([k, label]) => row(label, (p) => p.metrics?.[k] ?? null)).join("")}
+    </tbody></table></div>
+    <p class="small muted">Newest run first. Highlighted cells changed since the run before; hover to see the earlier value. A rubric change alone can move points.</p>
+  </details>`;
 }
 
 function changes(id) {
@@ -130,6 +177,15 @@ function changes(id) {
     if (a.adopters !== b.adopters && a.adopters != null) add(`Documented adopters: ${a.adopters} → ${b.adopters}`);
     for (const k of new Set([...Object.keys(a.links), ...Object.keys(b.links)])) if (a.links[k] !== b.links[k]) add(`${k[0].toUpperCase() + k.slice(1)} link: ${a.links[k] ?? "—"} → ${b.links[k] ?? "—"}`);
     if (!a.archived && b.archived) add("Repository archived");
+    for (const [k, label] of CRIT_LABELS) {
+      const x = a.crit?.[k], y = b.crit?.[k];
+      if (x != null && y != null && x !== y) add(`${label}: ${x} → ${y} (${y > x ? "+" : ""}${y - x})`);
+    }
+    if (a.penalty != null && b.penalty != null && a.penalty !== b.penalty) add(`Penalty: ${a.penalty} → ${b.penalty}`);
+    for (const [k, label] of METRIC_LABELS) {
+      const x = a.metrics?.[k], y = b.metrics?.[k];
+      if (x != null && y != null && x !== y) add(`${label}: ${fmtMetric(x)} → ${fmtMetric(y)}`);
+    }
   }
   return out.reverse();
 }
@@ -288,7 +344,9 @@ ${gtmBody}
       ${nav("/categories/", "Categories")}
       ${nav("/evaluation/", "Evaluation")}
       ${nav("/submit/", "Submit")}
+      ${nav("/roadmap/", "Roadmap")}
       ${nav("/about/", "About")}
+      ${nav("/contact/", "Contact")}
       ${SIS ? `<a class="nav-ext" href="${attr(SIS.url)}" title="Ontologies for every other domain, on ${esc(SIS.name)}">Other domains <span aria-hidden="true">↗</span></a>` : ""}
       <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
@@ -307,6 +365,8 @@ ${body}
       <a href="/evaluation/">Methodology</a>
       <a href="/evaluation/#runs">Run history</a>
       <a href="/submit/">Submit a resource</a>
+      <a href="/roadmap/">Roadmap</a>
+      <a href="/contact/">Contact</a>
       <a href="/catalog.json">catalog.json</a>
       <a href="/catalog.jsonld">DCAT JSON-LD</a>
       ${config.repository ? `<a href="${attr(config.repository)}">GitHub</a>` : ""}
@@ -738,7 +798,7 @@ function entryPage(e) {
         return `<div class="bd-row${na ? " is-na" : ""}">
       <div class="bd-label"><span><b class="sym">${esc(rb.symbol)}</b> ${esc(rb.label)}${rb.fair ? ' <span class="fair-tag">FAIR</span>' : ""}</span><span class="bd-num">${na ? "n/a" : `${b.score}<small>/${b.max}</small>`}</span></div>
       <div class="bar${rb.fair ? " bar-fair" : ""}" role="img" aria-label="${attr(`${rb.label}: ${b.score} of ${b.max}`)}"><span style="width:${pct}%"></span></div>
-      <ul class="bd-steps">${(b.steps || []).map((s) => `<li><span>${esc(s.label)}</span><span class="muted">${esc(s.detail)}</span><b>${s.pts > 0 ? "+" : ""}${s.pts}</b></li>`).join("")}</ul>
+      <ul class="bd-steps">${(b.steps || []).map((s) => `<li${s.notAssessed ? ' class="na"' : ""}><span>${esc(s.label)}</span><span class="muted">${esc(s.detail)}</span><b>${s.notAssessed ? `n/a<span class="muted"> (${s.outOf})</span>` : `${s.pts > 0 ? "+" : ""}${s.pts}`}</b></li>`).join("")}</ul>
     </div>`;
       }).join("")
     : `<p class="muted">Not evaluated yet. Run <code>npm run evaluate</code>.</p>`;
@@ -773,6 +833,7 @@ function entryPage(e) {
     <div class="score-card">
       ${gradeBadge(e, "lg")}
       ${r ? `<p class="fair-line"><span class="fair-tag">FAIR</span> <b>${r.fair}</b>/${FAIR_MAX}</p>` : ""}
+      ${r?.qualityPartial ? `<p class="small q-partial-note">* Q partially assessed: ${r.qualityNotAssessed} of 20 points could not be checked and are left out of the total.</p>` : ""}
       ${versionLabel(r) ? `<p class="muted small">Version ${esc(versionLabel(r).length > 28 ? versionLabel(r).slice(0, 27) + "…" : versionLabel(r))}</p>` : ""}
       <p class="muted small">${r ? `Evaluated ${fmtDate(r.evaluatedAt || evaluation.generatedAt)}` : "Not evaluated"}</p>
       <a class="small" href="/evaluation/#formula">How scores work</a>
@@ -820,9 +881,10 @@ function entryPage(e) {
     <div class="panel" id="history">
       <h2>History &amp; changes <span class="count">${h.length} run${h.length === 1 ? "" : "s"}</span></h2>
       ${h.length >= 2 ? `<div class="spark-wrap">${sparkline(h)}<span class="muted small">Score over time</span></div>` : ""}
+      ${metricsAcrossRuns(h)}
       ${
         ch.length
-          ? `<ul class="changes">${ch.slice(0, 12).map((c) => `<li><time datetime="${attr(c.at)}">${esc(fmtDate(c.at))}</time><span>${esc(c.what)}</span></li>`).join("")}</ul>`
+          ? `<ul class="changes">${ch.slice(0, 20).map((c) => `<li><time datetime="${attr(c.at)}">${esc(fmtDate(c.at))}</time><span>${esc(c.what)}</span></li>`).join("")}</ul>`
           : `<p class="muted small">${h.length < 2 ? "History starts with the first archived run; changes appear after the next evaluation." : "No changes detected between runs."}</p>`
       }
       ${
@@ -898,7 +960,7 @@ function workedExample() {
       <tbody>${RUBRIC.map((rb) => {
         const b = r.breakdown[rb.key];
         return (b.steps || [])
-          .map((s, i) => `<tr${i === 0 ? ' class="grp"' : ""}>${i === 0 ? `<td rowspan="${b.steps.length}"><b>${esc(rb.symbol)}</b> ${esc(rb.label)}${rb.fair ? ' <span class="fair-tag">FAIR</span>' : ""}<br><span class="muted small">= ${b.score} / ${b.max}</span></td>` : ""}<td>${esc(s.label)}</td><td class="muted">${esc(s.detail)}</td><td class="num">${s.pts > 0 ? "+" : ""}${s.pts}${s.max ? `<span class="muted"> / ${s.max}</span>` : ""}</td></tr>`)
+          .map((s, i) => `<tr${i === 0 ? ' class="grp"' : ""}>${i === 0 ? `<td rowspan="${b.steps.length}"><b>${esc(rb.symbol)}</b> ${esc(rb.label)}${rb.fair ? ' <span class="fair-tag">FAIR</span>' : ""}<br><span class="muted small">= ${b.score} / ${b.max}</span></td>` : ""}<td>${esc(s.label)}</td><td class="muted">${esc(s.detail)}</td><td class="num">${s.notAssessed ? `n/a<span class="muted"> (${s.outOf})</span>` : `${s.pts > 0 ? "+" : ""}${s.pts}${s.max ? `<span class="muted"> / ${s.max}</span>` : ""}`}</td></tr>`)
           .join("");
       }).join("")}</tbody>
     </table></div>
@@ -932,6 +994,7 @@ function evaluationPage() {
 
 <section class="wrap section">
   <div class="grade-dist">${dist.map((g) => `<div class="gd"><span class="grade grade-${g.grade}"><b>${g.grade}</b></span><span><b>${g.n}</b> resource${g.n === 1 ? "" : "s"}</span><small>${g.min}+ points</small></div>`).join("")}</div>
+  <p class="small muted">* next to a grade means ontology quality (Q) was only partly assessed: checks NeuroSchema could not run are left out of the possible points rather than scored 0.</p>
 </section>
 
 <section class="wrap section" id="formula">
@@ -1129,6 +1192,99 @@ function submitPage() {
   return page({ title: "Submit a resource", pathname: "/submit/", body, description, scripts: ["/assets/submit.js"], graph: [webPage("WebPage", "/submit/", "Submit a resource", description), breadcrumbs(trail)] });
 }
 
+// Contact details (override with CONTACT_NAME, CONTACT_EMAILS=a@x,b@y and CONTACT_SITE at build time).
+const CONTACT = {
+  name: process.env.CONTACT_NAME || "Tek Raj Chhetri",
+  emails: (process.env.CONTACT_EMAILS || "tekraj.chhetri@cair-nepal.org,tekraj@mit.edu").split(",").map((x) => x.trim()).filter(Boolean),
+  site: process.env.CONTACT_SITE ?? "https://tekrajchhetri.com/",
+  github: process.env.CONTACT_GITHUB ?? "tekrajchhetri", // for the photo; empty to hide it
+  role: process.env.CONTACT_ROLE || "Creator & maintainer",
+};
+
+// Contributors, pulled from the GitHub API at build time (bots left out). The last good list is cached in
+// .local/ so an offline build, or one that hits the rate limit, still shows it.
+// Accounts not to list, e.g. AI assistants credited through Co-Authored-By lines (CONTRIBUTORS_EXCLUDE=a,b).
+const EXCLUDE = new Set((process.env.CONTRIBUTORS_EXCLUDE ?? "claude").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean));
+async function githubContributors() {
+  const m = String(config.repository || "").match(/github\.com\/([^/]+)\/([^/#?]+)/);
+  if (!m) return null;
+  const cache = path.join(root, ".local", "contributors.json");
+  try {
+    const headers = { Accept: "application/vnd.github+json", "User-Agent": "neuroschema-build", ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) };
+    const r = await fetch(`https://api.github.com/repos/${m[1]}/${m[2].replace(/\.git$/, "")}/contributors?per_page=100`, { headers, signal: AbortSignal.timeout(15000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const list = (await r.json())
+      .filter((c) => c.type !== "Bot" && !/\[bot\]$/.test(c.login) && !EXCLUDE.has(c.login.toLowerCase()))
+      .map((c) => ({ login: c.login, url: c.html_url, avatar: c.avatar_url }));
+    // Display names need one request per person; keep the login if that fails.
+    for (const c of list.slice(0, 30)) {
+      const u = await fetch(`https://api.github.com/users/${c.login}`, { headers, signal: AbortSignal.timeout(10000) }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+      if (u?.name) c.name = u.name;
+    }
+    await mkdir(path.dirname(cache), { recursive: true });
+    await writeFile(cache, JSON.stringify(list, null, 2) + "\n");
+    return list;
+  } catch (err) {
+    if (existsSync(cache)) return JSON.parse(await readFile(cache, "utf8")).filter((c) => !EXCLUDE.has(c.login.toLowerCase()));
+    console.warn(`Note: couldn't fetch contributors from GitHub (${err.message}); the contact page links to GitHub instead.`);
+    return null;
+  }
+}
+const contributors = await githubContributors();
+
+function contactPage() {
+  const trail = [["Home", "/"], ["Contact", "/contact/"]];
+  const repo = config.repository;
+  const ICON = {
+    mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6 8.5-6"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+    flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg>',
+    code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>',
+  };
+  const host = (u) => u.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const ways = [
+    { icon: ICON.plus, title: "Add or update a resource", text: "Use the submission form. A bot turns it into a pull request for review.", href: "/submit/", cta: "Submission form" },
+    repo && { icon: ICON.flag, title: "Report a problem", text: "Wrong score or metadata, a broken link, or a bug on the site?", href: `${repo}/issues/new?template=report-problem.yml`, cta: "Report a problem" },
+    repo && { icon: ICON.code, title: "Suggest an idea", text: "A feature, a scoring improvement or a collaboration. The code is open source too.", href: `${repo}/issues/new?template=idea.yml`, cta: "Suggest an idea" },
+  ].filter(Boolean);
+  const people = contributors?.length
+    ? `<ul class="people">${contributors.map((c) => `<li><a href="${attr(c.url)}" rel="noopener"><img src="${attr(c.avatar)}&amp;s=160" alt="" width="64" height="64" loading="lazy"><b>${esc(c.name || c.login)}</b>${c.name ? `<small>@${esc(c.login)}</small>` : ""}</a></li>`).join("")}</ul>`
+    : "";
+  const body = `
+<section class="page-head wrap">
+  ${crumbsHtml(trail)}
+  <h1>Contact</h1>
+  <p class="lede">Questions, corrections or ideas for collaboration? We'd like to hear from you.</p>
+</section>
+<section class="wrap section contact">
+  <div class="contact-grid">
+    <article class="contact-card maintainer">
+      ${CONTACT.github ? `<img class="portrait" src="https://github.com/${attr(CONTACT.github)}.png?size=240" alt="${attr(CONTACT.name)}" width="112" height="112">` : ""}
+      <div>
+        <p class="eyebrow">${esc(CONTACT.role)}</p>
+        <h2>${esc(CONTACT.name)}</h2>
+        <div class="contact-links">
+          ${CONTACT.emails.map((x) => `<a class="contact-link" href="mailto:${attr(x)}">${ICON.mail}<span>${esc(x)}</span></a>`).join("")}
+          ${CONTACT.site ? `<a class="contact-link" href="${attr(CONTACT.site)}" rel="noopener">${ICON.globe}<span>${esc(host(CONTACT.site))}</span></a>` : ""}
+        </div>
+      </div>
+    </article>
+    <div class="ways">
+      ${ways.map((w) => `<a class="way" href="${attr(w.href)}"${w.href.startsWith("http") ? ' rel="noopener"' : ""}><span class="way-icon">${w.icon}</span><span><b>${esc(w.title)}</b><span class="muted">${esc(w.text)}</span><span class="way-cta">${esc(w.cta)} →</span></span></a>`).join("")}
+    </div>
+  </div>
+  ${people || repo ? `<div class="contributors-block" id="contributors">
+    <h2>Contributors</h2>
+    <p class="muted">Everyone who has contributed to NeuroSchema on GitHub.</p>
+    ${people}
+    ${repo ? `<p class="small muted"><a href="${attr(repo)}/graphs/contributors" rel="noopener">See all contributions on GitHub</a></p>` : ""}
+  </div>` : ""}
+</section>`;
+  const description = `Contact the NeuroSchema maintainer, and the people who have contributed to it on GitHub.`;
+  return page({ title: "Contact", pathname: "/contact/", body, description, graph: [webPage("ContactPage", "/contact/", "Contact NeuroSchema", description), breadcrumbs(trail)] });
+}
+
 function aboutPage() {
   const trail = [["Home", "/"], ["About", "/about/"]];
   const body = `
@@ -1294,6 +1450,10 @@ put(
 );
 put("submit/index.html", submitPage());
 put("about/index.html", aboutPage());
+put("contact/index.html", contactPage());
+// NeuroSchema shares SchemaScope's development plan, so /roadmap/ redirects there.
+const ROADMAP_URL = "https://schemascope.org/roadmap/";
+put("roadmap/index.html", `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Roadmap · NeuroSchema</title><meta name="robots" content="noindex"><link rel="canonical" href="${ROADMAP_URL}"><meta http-equiv="refresh" content="0; url=${ROADMAP_URL}"></head><body><p>NeuroSchema's roadmap is shared with SchemaScope: <a href="${ROADMAP_URL}">schemascope.org/roadmap</a>.</p></body></html>`);
 put("404.html", notFound());
 put("privacy/index.html", privacyPage());
 put("catalog.json", JSON.stringify({ name: "NeuroSchema", url: config.url, generatedAt: evaluation.generatedAt || null, run: evaluation.run || null, rubricVersion: RUBRIC_VERSION, categories, entries: catalog.map(record) }, null, 2));
