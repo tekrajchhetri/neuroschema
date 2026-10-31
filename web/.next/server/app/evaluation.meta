@@ -1,0 +1,34 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/evaluation/layout,_N_T_/evaluation/page,_N_T_/evaluation"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/evaluation/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 160,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/81bbe19921f3cefe4ecf5027f5a341709c4ffde0af9bb3c66f6ad6f4c5ced06f/$/evaluation",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/evaluation/page"
+    },
+    "isFallback": false
+  }
+}

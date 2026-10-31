@@ -1,0 +1,1 @@
+{"headers":{"x-nextjs-stale-time":"300","x-next-cache-tags":"_N_T_/layout,_N_T_/page,_N_T_/,_N_T_/index"},"segmentPaths":["/_tree","/_full","/__PAGE__"],"cacheControl":{"revalidate":300,"expire":31536000}}

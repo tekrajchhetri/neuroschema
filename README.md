@@ -1,6 +1,6 @@
 # NeuroSchema — neuroschema.org
 
-A curated catalog of neuroscience ontologies, schemas, vocabularies and data standards. Every entry is evaluated automatically against the FAIR principles, maintenance and community adoption, with a progressive inactivity penalty. Each run records the exact version evaluated and keeps full provenance. The site is served by a FastAPI backend (JSON API + MCP server) and a server-rendered Next.js UI; the evaluation pipeline is Node. The same backend and UI code runs SchemaScope.
+A curated catalog of neuroscience ontologies, schemas, vocabularies and data standards. Every entry is evaluated automatically against the FAIR principles, maintenance and community adoption, with a progressive inactivity penalty. Each run records the exact version evaluated and keeps full provenance. The site is served by a FastAPI backend (JSON API + MCP server) and a web server that renders the same page templates as the static build; the evaluation pipeline is Node. The same backend and UI code runs SchemaScope.
 
 <img width="1508" height="847" alt="Screenshot 2026-10-26 at 4 45 05 PM" src="https://github.com/user-attachments/assets/87855255-1a5a-4bf9-b9b8-ea2ccb0c64c0" />
 
@@ -60,22 +60,23 @@ Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scri
 ```
 data/*.json ──ingest──▶ SQLite (.local/catalog.db) ──▶ FastAPI  /api/…  (JSON, OpenAPI at /docs)
  (evaluate,                                              │       /mcp/   (MCP, streamable HTTP)
-  rescore, quality)                                      └──▶ Next.js UI (web/, server-rendered)
+  rescore, quality)                                      └──▶ web/server.mjs: pages rendered by scripts/site.mjs
+                                                              (the same templates as the static build)
 ```
 
 ```bash
 npm run ingest        # load data/ into .local/catalog.db (incremental; --rebuild to start over). refresh.sh runs it too
 npm run api           # API + MCP on http://127.0.0.1:8000  (needs uv: https://docs.astral.sh/uv/)
-npm run web           # UI on http://localhost:3000, reading the API
+npm run web           # site on http://localhost:3000, rendered from the API's data
 npm run test:api      # backend tests
 cd web && npm run check-links -- http://localhost:3000 http://127.0.0.1:8000   # crawl the running site for broken links
 ```
 
 - **API** (`backend/catalog_api/`): `/api/entries` (search with `q`, filters `category`, `kind`, `grade`, `format`, `registry`, `legacy`, `sort`, pagination and facet counts), `/api/entries/{id}`, `/api/entries/{id}/history`, `/api/categories`, `/api/runs`, `/api/runs/{id}`, `/api/stats`, `/api/meta`.
 - **MCP** at `/mcp/`: tools `search_catalog`, `get_entry`, `get_entry_history`, `list_categories`, `catalog_stats`, `scoring_rubric`. Add it to Claude Code with `claude mcp add --transport http neuroschema http://127.0.0.1:8000/mcp/`, or run it over stdio with `npm run mcp:stdio`.
-- **UI** (`web/`): Next.js App Router. Stylesheet and brand images come from `src/assets/` (copied on build). Pages not ported yet are proxied to the static build when `LEGACY_SITE_URL` is set.
+- **Site** (`web/server.mjs`): renders the static site's own templates (`scripts/site.mjs`) from API data, so pages are identical to `npm run build` output; reloads automatically after an ingest.
 
-Environment: `CATALOG_REPO` (repository root; default: parent of `backend/`), `CATALOG_DB`, `CORS_ORIGINS`, `MCP_ALLOWED_HOSTS` (public host name(s) of the API, e.g. `api.neuroschema.org`; localhost always works) for the API; `API_URL` (server-side), `NEXT_PUBLIC_API_URL` (links shown to readers), `REVALIDATE_SECONDS`, `LEGACY_SITE_URL` for the UI. The UI build pre-renders some pages, so the API must be reachable during `next build`.
+Environment: `CATALOG_REPO` (repository root; default: parent of `backend/`), `CATALOG_DB`, `CORS_ORIGINS`, `MCP_ALLOWED_HOSTS` (public host name(s) of the API, e.g. `api.neuroschema.org`; localhost always works) for the API; `API_URL`, `PORT`, `HOST`, `POLL_SECONDS`, `CACHE_MB` for the site server.
 
 ## Layout
 
@@ -109,9 +110,9 @@ To change the catalog, rubric or code and preview the effect on scores locally, 
 
 ## Deploy
 
-New stack: two processes, the API (`uvicorn catalog_api.app:app`, Python ≥ 3.11, with `.local/catalog.db` built by `npm run ingest`) and the UI (`cd web && npm run build && npm start`, with `API_URL` pointing at the API). See D-025 in DECISIONS.md.
+New stack: two processes, the API (`uvicorn catalog_api.app:app`, Python ≥ 3.11, with `.local/catalog.db` built by `npm run ingest`) and the site server (`node web/server.mjs`, with `API_URL` pointing at the API). See D-025 and D-026 in DECISIONS.md.
 
-Static build (still used for pages not ported yet, via `LEGACY_SITE_URL`): import the repository. `vercel.json` already sets the build command and output directory. Then add `neuroschema.org` under **Settings → Domains**: an `A` record to `76.76.21.21` for the apex domain, and a `CNAME` record to `cname.vercel-dns.com` for `www`.
+Static build (same pages): import the repository. `vercel.json` already sets the build command and output directory. Then add `neuroschema.org` under **Settings → Domains**: an `A` record to `76.76.21.21` for the apex domain, and a `CNAME` record to `cname.vercel-dns.com` for `www`.
 
 ## SEO
 

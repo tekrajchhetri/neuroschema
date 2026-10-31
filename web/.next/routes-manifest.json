@@ -1,0 +1,214 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:file((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+)/",
+      "destination": "/:file",
+      "internal": true,
+      "priority": true,
+      "missing": [
+        {
+          "type": "header",
+          "key": "x-nextjs-data"
+        }
+      ],
+      "statusCode": 308,
+      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+))/$"
+    },
+    {
+      "source": "/:notfile((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+)",
+      "destination": "/:notfile/",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+))$"
+    },
+    {
+      "source": "/search",
+      "destination": "/catalog/",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/search(?:/)?$"
+    },
+    {
+      "source": "/o/:id/entry.json",
+      "destination": "http://127.0.0.1:62760/api/entries/:id",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/o(?:/([^/]+?))/entry\\.json(?:/)?$"
+    },
+    {
+      "source": "/runs/index.json",
+      "destination": "http://127.0.0.1:62760/api/runs",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/runs/index\\.json(?:/)?$"
+    },
+    {
+      "source": "/runs/:id([^/]+)\\.json",
+      "destination": "http://127.0.0.1:62760/api/runs/:id",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/runs(?:/([^/]+))\\.json(?:/)?$"
+    },
+    {
+      "source": "/catalog.json",
+      "destination": "http://127.0.0.1:62760/api/entries?size=100",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/catalog\\.json(?:/)?$"
+    },
+    {
+      "source": "/catalog-index.json",
+      "destination": "http://127.0.0.1:62760/api/entries?size=100",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/catalog-index\\.json(?:/)?$"
+    },
+    {
+      "source": "/search-index.json",
+      "destination": "http://127.0.0.1:62760/api/entries?size=100",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/search-index\\.json(?:/)?$"
+    },
+    {
+      "source": "/catalog.schema.json",
+      "destination": "https://github.com/tekrajchhetri/neuroschema/blob/main/data/catalog.schema.json",
+      "statusCode": 307,
+      "regex": "^(?!/_next)/catalog\\.schema\\.json(?:/)?$"
+    }
+  ],
+  "headers": [],
+  "onMatchHeaders": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/category/[id]",
+      "regex": "^/category/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/category/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/o/[id]",
+      "regex": "^/o/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/o/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/about",
+      "regex": "^/about(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/about(?:/)?$"
+    },
+    {
+      "page": "/api-docs",
+      "regex": "^/api\\-docs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api\\-docs(?:/)?$"
+    },
+    {
+      "page": "/catalog",
+      "regex": "^/catalog(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/catalog(?:/)?$"
+    },
+    {
+      "page": "/categories",
+      "regex": "^/categories(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/categories(?:/)?$"
+    },
+    {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
+      "page": "/evaluation",
+      "regex": "^/evaluation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/evaluation(?:/)?$"
+    },
+    {
+      "page": "/evaluation/validation",
+      "regex": "^/evaluation/validation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/evaluation/validation(?:/)?$"
+    },
+    {
+      "page": "/privacy",
+      "regex": "^/privacy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/privacy(?:/)?$"
+    },
+    {
+      "page": "/roadmap",
+      "regex": "^/roadmap(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/roadmap(?:/)?$"
+    },
+    {
+      "page": "/robots.txt",
+      "regex": "^/robots\\.txt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/robots\\.txt(?:/)?$"
+    },
+    {
+      "page": "/sitemap.xml",
+      "regex": "^/sitemap\\.xml(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sitemap\\.xml(?:/)?$"
+    },
+    {
+      "page": "/submit",
+      "regex": "^/submit(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/submit(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}
