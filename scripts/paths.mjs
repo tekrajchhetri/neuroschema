@@ -8,7 +8,9 @@ import { fileURLToPath } from "node:url";
 export const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 export const IS_CI = process.env.GITHUB_ACTIONS === "true";
 export const trackedData = path.join(root, "data");
-// Pull-request previews in CI write to a scratch folder so they never touch tracked results.
+// Previews write to a git-ignored scratch folder so they never touch tracked results:
+// pull requests in CI, and contributors who set PREVIEW=1 to see how their change scores.
 export const localData = path.join(root, ".local", "data");
-export const outData = IS_CI ? localData : trackedData;
+export const IS_PREVIEW = IS_CI || process.env.PREVIEW === "1";
+export const outData = IS_PREVIEW ? localData : trackedData;
 export const GENERATED = ["data/evaluation.json", "data/runs/", "data/quality/"];

@@ -70,6 +70,8 @@ Grades: A ≥ 85, B ≥ 70, C ≥ 55, D ≥ 40, E < 40. The rules live in [`scri
 
 ## Contributions (all through Git)
 
+To change the catalog, rubric or code and preview the effect on scores locally, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 1. A contributor fills in **neuroschema.org/submit**, which opens a pre-filled GitHub issue. They can also open the issue form directly, or send a pull request editing `data/catalog.json`.
 2. **Submission to pull request** (`.github/workflows/submission.yml`) converts the issue into a pull request. It fills paper titles from Crossref and comments on the issue with the PR link, or with what needs fixing.
 3. **Checks** (`.github/workflows/ci.yml`) runs on every PR. It validates the catalog and runs online checks for the changed entries: links, DOIs and OLS IDs. It runs a FAIR evaluation preview, then posts a summary as a PR comment and in the job summary.

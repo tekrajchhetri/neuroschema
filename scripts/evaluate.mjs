@@ -19,7 +19,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { RUBRIC_VERSION, scoreEntry } from "./rubric.mjs";
-import { root, outData, trackedData, IS_CI } from "./paths.mjs";
+import { root, outData, trackedData, IS_PREVIEW } from "./paths.mjs";
 
 export const EVALUATOR_VERSION = "2.0.0";
 
@@ -491,4 +491,4 @@ if (differing.length) {
 }
 const stale = results.filter(([, r]) => r.github?.stale || r.ols?.stale || r.obo?.stale).map(([id]) => id);
 if (stale.length) console.log(`Carried forward last good values for failed lookups: ${stale.join(", ")}`);
-console.log(`Wrote ${path.relative(root, outFile)}${process.env.NO_ARCHIVE ? "" : ` and ${path.relative(root, runsDir)}/${runId}.json`}${IS_CI ? " (CI preview only; not tracked)" : ""}`);
+console.log(`Wrote ${path.relative(root, outFile)}${process.env.NO_ARCHIVE ? "" : ` and ${path.relative(root, runsDir)}/${runId}.json`}${IS_PREVIEW ? " (preview only; not tracked)" : ""}`);

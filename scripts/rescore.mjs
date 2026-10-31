@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // Recompute scores from stored facts after a rubric change (no network).
-// Reads the newest of .local/data/evaluation.json and data/evaluation.json; writes to .local/data/ unless in CI.
+// Reads the newest of .local/data/evaluation.json and data/evaluation.json; writes to data/, or to .local/data/ in CI or with PREVIEW=1.
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { RUBRIC_VERSION, scoreEntry } from "./rubric.mjs";
-import { root, outData, trackedData, IS_CI } from "./paths.mjs";
+import { root, outData, trackedData, IS_PREVIEW } from "./paths.mjs";
 
 const catalog = JSON.parse(await readFile(path.join(root, "data/catalog.json"), "utf8"));
 const candidates = [];
@@ -22,4 +22,4 @@ ev.rescoredAt = new Date().toISOString();
 await mkdir(outData, { recursive: true });
 const out = path.join(outData, "evaluation.json");
 await writeFile(out, JSON.stringify(ev, null, 2) + "\n");
-console.log(`Rescored ${Object.keys(ev.entries).length} entries → ${path.relative(root, out)}${IS_CI ? "" : " (local preview)"}`);
+console.log(`Rescored ${Object.keys(ev.entries).length} entries → ${path.relative(root, out)}${IS_PREVIEW ? " (preview only; not tracked)" : ""}`);

@@ -15,8 +15,12 @@
     "validate": "node scripts/validate.mjs",
     "validate:online": "node scripts/validate.mjs --online",
     "quality": "node scripts/quality.mjs",
+    "quality:preview": "PREVIEW=1 OOPS_IMAGE=neuroschema/oops ROBOT_IMAGE=neuroschema/robot SKIP_OOPS_WEB=1 node scripts/quality.mjs",
     "evaluate": "node scripts/evaluate.mjs",
+    "evaluate:preview": "PREVIEW=1 NO_ARCHIVE=1 node scripts/evaluate.mjs",
     "rescore": "node scripts/rescore.mjs",
+    "rescore:preview": "PREVIEW=1 node scripts/rescore.mjs",
+    "score:diff": "node scripts/score-diff.mjs",
     "images": "docker build -q -t neuroschema/oops docker/oops && docker build -q -t neuroschema/robot docker/robot",
     "refresh": "scripts/refresh.sh",
     "quality:all": "scripts/quality-all.sh"
