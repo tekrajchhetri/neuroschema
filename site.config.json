@@ -1,5 +1,6 @@
 {
   "name": "neuroschema.org",
+  "brand": "NeuroSchema",
   "url": "https://neuroschema.org",
   "tagline": "Neuroscience ontologies, schemas & standards",
   "description": "A curated, automatically evaluated catalog of neuroscience ontologies, schemas, vocabularies and data standards.",
@@ -7,6 +8,14 @@
   "gtmId": "GTM-KR77M7HS",
   "sister": {
     "name": "SchemaScope",
-    "url": "https://schemascope.org"
+    "url": "https://schemascope.org",
+    "eyebrow": "Beyond neuroscience",
+    "title": "Looking for another domain?",
+    "blurb": "NeuroSchema covers neuroscience. For ontologies and schemas in every other field, from life sciences, chemistry and earth science to engineering, privacy, law and computing, use our sister catalog SchemaScope. It is scored with the same rubric."
+  },
+  "hero": {
+    "before": "The map of ",
+    "em": "neuroscience",
+    "after": " ontologies & schemas."
   }
 }
