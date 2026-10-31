@@ -17,5 +17,20 @@
     "before": "The map of ",
     "em": "neuroscience",
     "after": " ontologies & schemas."
-  }
+  },
+  "about": "Neuroscience data is described with dozens of ontologies, controlled vocabularies, metadata schemas and data standards, maintained by different communities and registries. NeuroSchema brings them into one catalog, organised by domain, so you can see what exists, which version is current, how FAIR and well maintained it is, and who already uses it.",
+  "roadmapUrl": "https://schemascope.org/roadmap/",
+  "contact": {
+    "name": "Tek Raj Chhetri",
+    "role": "Creator & maintainer",
+    "emails": [
+      "tekraj.chhetri@cair-nepal.org",
+      "tekraj@mit.edu"
+    ],
+    "site": "https://tekrajchhetri.com/",
+    "github": "tekrajchhetri"
+  },
+  "contributorsExclude": [
+    "claude"
+  ]
 }
