@@ -60,6 +60,16 @@
     startChat(a.dataset.askQ);
   });
 
+  // Document pages: highlight the section being read in "On this page".
+  const docToc = $("[data-doc-toc]");
+  if (docToc && "IntersectionObserver" in window) {
+    const links = [...docToc.querySelectorAll("a")];
+    const spy = new IntersectionObserver((entries) => {
+      for (const en of entries) if (en.isIntersecting) links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === `#${en.target.id}`));
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    links.forEach((a) => { const t = document.getElementById(a.getAttribute("href").slice(1)); if (t) spy.observe(t); });
+  }
+
   // Account link: "Sign in", or the signed-in user's avatar and name (from the API on this origin).
   const account = $("[data-account]");
   if (account) account.href = `/api/auth/github/login?next=${encodeURIComponent(location.pathname + location.search)}`;
@@ -111,84 +121,121 @@
       .catch(() => {});
   }
 
-  // Catalog explorer: data-driven, paginated (thousands of entries). The first page is server-rendered.
+  // Anonymous search log (privacy policy: /privacy/#chat): what people searched for, how many results, the top results,
+  // and which one they opened. Logged once typing pauses; a click before that is sent with the log entry.
+  const logSession = () => {
+    try {
+      let id = JSON.parse(sessionStorage.getItem("chat-session"));
+      if (!id) { id = crypto.randomUUID?.() || String(Math.random()).slice(2); sessionStorage.setItem("chat-session", JSON.stringify(id)); }
+      return id;
+    } catch { return null; }
+  };
+  const logState = new WeakMap();
+  const postLog = (path, body) => fetch(path, { method: "POST", credentials: "same-origin", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  window.searchLog = (source, q, filters, ids, count, container) => {
+    if (!container || !location.protocol.startsWith("http")) return;
+    const clean = Object.fromEntries(Object.entries(filters || {}).filter(([, v]) => v !== "" && v != null && v !== false));
+    let st = logState.get(container);
+    if (!st) {
+      st = {};
+      logState.set(container, st);
+      container.addEventListener("click", (e) => {
+        const a = e.target.closest('a[href^="/o/"]');
+        if (!a) return;
+        const entry = decodeURIComponent(a.getAttribute("href").split("/")[2] || "");
+        if (st.id) postLog(`/api/logs/search/${encodeURIComponent(st.id)}/click`, { entryId: entry }).catch(() => {});
+        else if (st.body) { clearTimeout(st.timer); postLog("/api/logs/search", { ...st.body, clicked: [entry] }).catch(() => {}); st.body = null; }
+      });
+    }
+    clearTimeout(st.timer);
+    st.id = null;
+    st.body = null;
+    if (!(q || "").trim() && !Object.keys(clean).length) return;
+    st.body = { source, q: (q || "").trim() || null, filters: clean, resultCount: count, resultIds: ids.slice(0, 20), session: logSession() };
+    st.timer = setTimeout(() => {
+      const body = st.body;
+      if (!body) return;
+      st.body = null;
+      postLog("/api/logs/search", body).then((r) => r.json()).then((d) => { st.id = d.id; }).catch(() => {});
+    }, 1500);
+  };
+
+  // Catalog explorer (home page)
   const grid = $("#cards");
   const q = $("#q");
-  if (grid && q && grid.dataset.index) {
-    const f = { cat: $("#f-cat"), kind: $("#f-kind"), reg: $("#f-reg"), grade: $("#f-grade"), sort: $("#f-sort"), active: $("#f-active") };
-    const count = $("#count"), empty = $("#empty"), more = $("#more");
-    const PAGE = 48;
-    let all = [], view = [], shown = 0;
-    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  if (grid && q) {
+    const cards = $$(".card", grid);
+    const f = { cat: $("#f-cat"), kind: $("#f-kind"), species: $("#f-species"), grade: $("#f-grade"), sort: $("#f-sort"), active: $("#f-active") };
+    const count = $("#count");
+    const empty = $("#empty");
+    const explore = $("#explore");
+
+    // Read state from the URL so filtered views can be shared.
     const params = new URLSearchParams(location.search);
     q.value = params.get("q") || "";
-    for (const k of ["cat", "kind", "reg", "grade", "sort"]) if (params.get(k) && f[k]) f[k].value = params.get(k);
+    for (const k of ["cat", "kind", "species", "grade", "sort"]) if (params.get(k)) f[k].value = params.get(k);
     f.active.checked = params.get("active") === "1";
+
     const sorters = {
-      score: (a, b) => (b.s ?? -1) - (a.s ?? -1) || a.n.localeCompare(b.n),
-      name: (a, b) => (a.a || a.n).localeCompare(b.a || b.n),
-      activity: (a, b) => (b.t || "").localeCompare(a.t || ""),
-      adopt: (a, b) => (b.u || 0) - (a.u || 0) || (b.s ?? -1) - (a.s ?? -1),
-      fair: (a, b) => (b.f ?? -1) - (a.f ?? -1) || (b.s ?? -1) - (a.s ?? -1),
+      score: (a, b) => b.dataset.score - a.dataset.score || a.dataset.name.localeCompare(b.dataset.name),
+      name: (a, b) => a.dataset.name.localeCompare(b.dataset.name),
+      activity: (a, b) => (b.dataset.activity || "").localeCompare(a.dataset.activity || ""),
+      adopt: (a, b) => b.dataset.adopt - a.dataset.adopt || b.dataset.score - a.dataset.score,
+      fair: (a, b) => b.dataset.fair - a.dataset.fair || b.dataset.score - a.dataset.score,
     };
-    const card = (e) => `<article class="card">
-  <div class="card-top"><span class="kind">${esc(e.k)}</span>${e.l ? '<span class="pill-legacy">Legacy</span>' : ""}${e.g ? `<span class="grade grade-${e.g}"><b>${e.g}</b><small>${e.s}</small></span>` : '<span class="grade grade-none">–</span>'}</div>
-  <h3><a href="/o/${encodeURIComponent(e.id)}/"><span class="acr">${esc(e.a || e.n)}</span>${e.a && e.a !== e.n ? `<span class="nm">${esc(e.n)}</span>` : ""}</a></h3>
-  <p class="desc">${esc(e.d)}</p>
-  <div class="card-meta"><a class="cat-link" href="/category/${e.c}/">${esc(e.cn)}</a>${e.x?.length ? `<span class="xdomains" title="Also used in: ${esc(e.xn.join(", "))}">+${e.x.length} domain${e.x.length === 1 ? "" : "s"}</span>` : ""}${e.v ? `<span class="ver">${esc(e.v.length > 22 ? e.v.slice(0, 21) + "…" : e.v)}</span>` : ""}</div>
-  <div class="card-foot"><span class="chips">${(e.fm || []).slice(0, 3).map((x) => `<span class="chip">${esc(x)}</span>`).join("")}</span><span class="stat" title="Listed in: ${esc(e.r.join(", "))}">${e.f != null ? `FAIR ${e.f} · ` : ""}${e.r.length} source${e.r.length === 1 ? "" : "s"}</span></div>
-</article>`;
+
     function apply(push = true) {
       const terms = q.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
-      view = all.filter((e) =>
-        terms.every((t) => e.text.includes(t)) &&
-        (!f.cat.value || e.c === f.cat.value || (e.x || []).includes(f.cat.value)) &&
-        (!f.kind.value || e.kid === f.kind.value) &&
-        (!f.reg.value || e.r.includes(f.reg.value)) &&
-        (!f.grade.value || e.g === f.grade.value) &&
-        (!f.active.checked || !e.l)
-      ).sort(sorters[f.sort.value] || sorters.score);
-      shown = 0;
-      grid.innerHTML = "";
-      page();
-      count.textContent = `${view.length.toLocaleString()} of ${all.length.toLocaleString()} resources`;
-      empty.hidden = view.length > 0;
+      let n = 0;
+      for (const c of cards) {
+        const d = c.dataset;
+        const show =
+          terms.every((t) => d.text.includes(t)) &&
+          (!f.cat.value || d.cat === f.cat.value) &&
+          (!f.kind.value || d.kind === f.kind.value) &&
+          (!f.species.value || d.species.split("|").includes(f.species.value)) &&
+          (!f.grade.value || d.grade === f.grade.value) &&
+          (!f.active.checked || d.status !== "legacy");
+        c.hidden = !show;
+        if (show) n++;
+      }
+      cards.sort(sorters[f.sort.value] || sorters.score).forEach((c) => grid.appendChild(c));
+      count.textContent = `${n} of ${cards.length} resources`;
+      empty.hidden = n > 0;
+      window.searchLog?.("catalog", q.value, { category: f.cat.value, kind: f.kind.value, species: f.species.value, grade: f.grade.value, activeOnly: f.active.checked },
+        cards.filter((c) => !c.hidden).slice(0, 20).map((c) => (c.querySelector('a[href^="/o/"]')?.getAttribute("href") || "").split("/")[2]).filter(Boolean), n, grid);
+      const sis = $("#sister-link");
+      if (sis && n === 0) sis.href = q.value.trim() ? `${sis.origin}/search/?q=${encodeURIComponent(q.value.trim())}` : `${sis.origin}/catalog/`;
       if (push) {
         const p = new URLSearchParams();
         if (q.value.trim()) p.set("q", q.value.trim());
-        for (const k of ["cat", "kind", "reg", "grade"]) if (f[k]?.value) p.set(k, f[k].value);
+        for (const k of ["cat", "kind", "species", "grade"]) if (f[k].value) p.set(k, f[k].value);
         if (f.sort.value !== "score") p.set("sort", f.sort.value);
         if (f.active.checked) p.set("active", "1");
         const s = p.toString();
         history.replaceState(null, "", s ? `?${s}` : location.pathname);
       }
     }
-    function page() {
-      grid.insertAdjacentHTML("beforeend", view.slice(shown, shown + PAGE).map(card).join(""));
-      shown = Math.min(view.length, shown + PAGE);
-      more.hidden = shown >= view.length;
-      more.textContent = `Load more (${(view.length - shown).toLocaleString()} more)`;
-    }
-    more.addEventListener("click", page);
-    fetch(grid.dataset.index).then((r) => r.json()).then((d) => {
-      all = d.map((e) => ({ ...e, text: [e.a, e.n, e.d, e.cn, ...(e.xn || []), ...(e.tg || []), ...(e.fm || []), ...e.r].join(" ").toLowerCase() }));
-      apply(false);
-    });
+
     let typing;
     q.addEventListener("input", () => {
       clearTimeout(typing);
-      typing = setTimeout(apply, 120);
+      typing = setTimeout(apply, 80);
+
     });
-    Object.values(f).forEach((el) => el?.addEventListener("change", () => apply()));
+
+    Object.values(f).forEach((el) => el.addEventListener("change", () => apply()));
     const reset = () => {
       q.value = "";
-      for (const k of ["cat", "kind", "reg", "grade"]) if (f[k]) f[k].value = "";
+      for (const k of ["cat", "kind", "species", "grade"]) f[k].value = "";
       f.sort.value = "score";
       f.active.checked = false;
       apply();
     };
     $("#f-reset")?.addEventListener("click", reset);
     $("#f-reset2")?.addEventListener("click", reset);
+    if (params.toString()) apply(false);
+
   }
 
   // "/" focuses the page's search or filter box
